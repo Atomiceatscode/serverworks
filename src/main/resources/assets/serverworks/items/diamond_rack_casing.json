@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "serverworks:block/diamond_rack_casing"
+  }
+}

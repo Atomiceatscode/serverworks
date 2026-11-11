@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": "minecraft:iron_ingot",
+    "G": "minecraft:glass_pane",
+    "R": "minecraft:redstone",
+    "D": "serverworks:blank_disk",
+    "C": "minecraft:copper_ingot"
+  },
+  "pattern": [
+    "IGI",
+    "RDR",
+    "ICI"
+  ],
+  "result": {
+    "id": "serverworks:disk_writer"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": "minecraft:glass_pane",
+    "C": "serverworks:iron_rack_casing",
+    "L": "minecraft:glowstone_dust",
+    "R": "minecraft:redstone"
+  },
+  "pattern": [
+    "GGG",
+    "GCG",
+    "LRL"
+  ],
+  "result": {
+    "id": "serverworks:status_display"
+  }
+}

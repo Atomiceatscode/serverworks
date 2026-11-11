@@ -1,0 +1,27 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "serverworks:server_core"
+    },
+    "title": {
+      "translate": "advancements.serverworks.start_server.title"
+    },
+    "description": {
+      "translate": "advancements.serverworks.start_server.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "parent": "serverworks:main/build_rack"
+}

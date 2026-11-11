@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "serverworks:blank_disk",
+    "minecraft:ender_pearl",
+    "minecraft:copper_ingot"
+  ],
+  "result": {
+    "id": "serverworks:link_card"
+  }
+}

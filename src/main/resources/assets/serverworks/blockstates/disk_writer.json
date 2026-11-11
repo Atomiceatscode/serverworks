@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "serverworks:block/disk_writer"
+    },
+    "facing=east": {
+      "model": "serverworks:block/disk_writer",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "serverworks:block/disk_writer",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "serverworks:block/disk_writer",
+      "y": 270
+    }
+  }
+}

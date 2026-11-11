@@ -1,0 +1,36 @@
+{
+  "criteria": {
+    "has_item": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "serverworks:mod_disk"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "serverworks:mod_disk"
+    },
+    "title": {
+      "translate": "advancements.serverworks.write_disk.title"
+    },
+    "description": {
+      "translate": "advancements.serverworks.write_disk.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "requirements": [
+    [
+      "has_item"
+    ]
+  ],
+  "parent": "serverworks:main/root"
+}

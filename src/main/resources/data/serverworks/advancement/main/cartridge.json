@@ -1,0 +1,36 @@
+{
+  "criteria": {
+    "has_item": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "serverworks:pack_cartridge"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "serverworks:pack_cartridge"
+    },
+    "title": {
+      "translate": "advancements.serverworks.cartridge.title"
+    },
+    "description": {
+      "translate": "advancements.serverworks.cartridge.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "requirements": [
+    [
+      "has_item"
+    ]
+  ],
+  "parent": "serverworks:main/write_disk"
+}

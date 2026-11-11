@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": "serverworks:iron_rack_casing",
+    "O": "minecraft:observer",
+    "R": "minecraft:repeater",
+    "D": "minecraft:diamond",
+    "P": "minecraft:comparator"
+  },
+  "pattern": [
+    "COC",
+    "RDR",
+    "CPC"
+  ],
+  "result": {
+    "id": "serverworks:server_core"
+  }
+}

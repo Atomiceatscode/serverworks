@@ -1,0 +1,280 @@
+{
+  "variants": {
+    "active=false,facing=north,formed=false,portal=closed": {
+      "model": "serverworks:block/gateway"
+    },
+    "active=false,facing=north,formed=true,portal=closed": {
+      "model": "serverworks:block/gateway_on"
+    },
+    "active=true,facing=north,formed=false,portal=closed": {
+      "model": "serverworks:block/gateway"
+    },
+    "active=true,facing=north,formed=true,portal=closed": {
+      "model": "serverworks:block/gateway_on"
+    },
+    "active=false,facing=north,formed=false,portal=open": {
+      "model": "serverworks:block/gateway"
+    },
+    "active=false,facing=north,formed=true,portal=open": {
+      "model": "serverworks:block/gateway_open"
+    },
+    "active=true,facing=north,formed=false,portal=open": {
+      "model": "serverworks:block/gateway"
+    },
+    "active=true,facing=north,formed=true,portal=open": {
+      "model": "serverworks:block/gateway_open"
+    },
+    "active=false,facing=north,formed=false,portal=restricted": {
+      "model": "serverworks:block/gateway"
+    },
+    "active=false,facing=north,formed=true,portal=restricted": {
+      "model": "serverworks:block/gateway_restricted"
+    },
+    "active=true,facing=north,formed=false,portal=restricted": {
+      "model": "serverworks:block/gateway"
+    },
+    "active=true,facing=north,formed=true,portal=restricted": {
+      "model": "serverworks:block/gateway_restricted"
+    },
+    "active=false,facing=east,formed=false,portal=closed": {
+      "model": "serverworks:block/gateway",
+      "y": 90
+    },
+    "active=false,facing=east,formed=true,portal=closed": {
+      "model": "serverworks:block/gateway_on",
+      "y": 90
+    },
+    "active=true,facing=east,formed=false,portal=closed": {
+      "model": "serverworks:block/gateway",
+      "y": 90
+    },
+    "active=true,facing=east,formed=true,portal=closed": {
+      "model": "serverworks:block/gateway_on",
+      "y": 90
+    },
+    "active=false,facing=east,formed=false,portal=open": {
+      "model": "serverworks:block/gateway",
+      "y": 90
+    },
+    "active=false,facing=east,formed=true,portal=open": {
+      "model": "serverworks:block/gateway_open",
+      "y": 90
+    },
+    "active=true,facing=east,formed=false,portal=open": {
+      "model": "serverworks:block/gateway",
+      "y": 90
+    },
+    "active=true,facing=east,formed=true,portal=open": {
+      "model": "serverworks:block/gateway_open",
+      "y": 90
+    },
+    "active=false,facing=east,formed=false,portal=restricted": {
+      "model": "serverworks:block/gateway",
+      "y": 90
+    },
+    "active=false,facing=east,formed=true,portal=restricted": {
+      "model": "serverworks:block/gateway_restricted",
+      "y": 90
+    },
+    "active=true,facing=east,formed=false,portal=restricted": {
+      "model": "serverworks:block/gateway",
+      "y": 90
+    },
+    "active=true,facing=east,formed=true,portal=restricted": {
+      "model": "serverworks:block/gateway_restricted",
+      "y": 90
+    },
+    "active=false,facing=south,formed=false,portal=closed": {
+      "model": "serverworks:block/gateway",
+      "y": 180
+    },
+    "active=false,facing=south,formed=true,portal=closed": {
+      "model": "serverworks:block/gateway_on",
+      "y": 180
+    },
+    "active=true,facing=south,formed=false,portal=closed": {
+      "model": "serverworks:block/gateway",
+      "y": 180
+    },
+    "active=true,facing=south,formed=true,portal=closed": {
+      "model": "serverworks:block/gateway_on",
+      "y": 180
+    },
+    "active=false,facing=south,formed=false,portal=open": {
+      "model": "serverworks:block/gateway",
+      "y": 180
+    },
+    "active=false,facing=south,formed=true,portal=open": {
+      "model": "serverworks:block/gateway_open",
+      "y": 180
+    },
+    "active=true,facing=south,formed=false,portal=open": {
+      "model": "serverworks:block/gateway",
+      "y": 180
+    },
+    "active=true,facing=south,formed=true,portal=open": {
+      "model": "serverworks:block/gateway_open",
+      "y": 180
+    },
+    "active=false,facing=south,formed=false,portal=restricted": {
+      "model": "serverworks:block/gateway",
+      "y": 180
+    },
+    "active=false,facing=south,formed=true,portal=restricted": {
+      "model": "serverworks:block/gateway_restricted",
+      "y": 180
+    },
+    "active=true,facing=south,formed=false,portal=restricted": {
+      "model": "serverworks:block/gateway",
+      "y": 180
+    },
+    "active=true,facing=south,formed=true,portal=restricted": {
+      "model": "serverworks:block/gateway_restricted",
+      "y": 180
+    },
+    "active=false,facing=west,formed=false,portal=closed": {
+      "model": "serverworks:block/gateway",
+      "y": 270
+    },
+    "active=false,facing=west,formed=true,portal=closed": {
+      "model": "serverworks:block/gateway_on",
+      "y": 270
+    },
+    "active=true,facing=west,formed=false,portal=closed": {
+      "model": "serverworks:block/gateway",
+      "y": 270
+    },
+    "active=true,facing=west,formed=true,portal=closed": {
+      "model": "serverworks:block/gateway_on",
+      "y": 270
+    },
+    "active=false,facing=west,formed=false,portal=open": {
+      "model": "serverworks:block/gateway",
+      "y": 270
+    },
+    "active=false,facing=west,formed=true,portal=open": {
+      "model": "serverworks:block/gateway_open",
+      "y": 270
+    },
+    "active=true,facing=west,formed=false,portal=open": {
+      "model": "serverworks:block/gateway",
+      "y": 270
+    },
+    "active=true,facing=west,formed=true,portal=open": {
+      "model": "serverworks:block/gateway_open",
+      "y": 270
+    },
+    "active=false,facing=west,formed=false,portal=restricted": {
+      "model": "serverworks:block/gateway",
+      "y": 270
+    },
+    "active=false,facing=west,formed=true,portal=restricted": {
+      "model": "serverworks:block/gateway_restricted",
+      "y": 270
+    },
+    "active=true,facing=west,formed=false,portal=restricted": {
+      "model": "serverworks:block/gateway",
+      "y": 270
+    },
+    "active=true,facing=west,formed=true,portal=restricted": {
+      "model": "serverworks:block/gateway_restricted",
+      "y": 270
+    },
+    "active=false,facing=up,formed=false,portal=closed": {
+      "model": "serverworks:block/gateway",
+      "x": 270
+    },
+    "active=false,facing=up,formed=true,portal=closed": {
+      "model": "serverworks:block/gateway_on",
+      "x": 270
+    },
+    "active=true,facing=up,formed=false,portal=closed": {
+      "model": "serverworks:block/gateway",
+      "x": 270
+    },
+    "active=true,facing=up,formed=true,portal=closed": {
+      "model": "serverworks:block/gateway_on",
+      "x": 270
+    },
+    "active=false,facing=up,formed=false,portal=open": {
+      "model": "serverworks:block/gateway",
+      "x": 270
+    },
+    "active=false,facing=up,formed=true,portal=open": {
+      "model": "serverworks:block/gateway_open",
+      "x": 270
+    },
+    "active=true,facing=up,formed=false,portal=open": {
+      "model": "serverworks:block/gateway",
+      "x": 270
+    },
+    "active=true,facing=up,formed=true,portal=open": {
+      "model": "serverworks:block/gateway_open",
+      "x": 270
+    },
+    "active=false,facing=up,formed=false,portal=restricted": {
+      "model": "serverworks:block/gateway",
+      "x": 270
+    },
+    "active=false,facing=up,formed=true,portal=restricted": {
+      "model": "serverworks:block/gateway_restricted",
+      "x": 270
+    },
+    "active=true,facing=up,formed=false,portal=restricted": {
+      "model": "serverworks:block/gateway",
+      "x": 270
+    },
+    "active=true,facing=up,formed=true,portal=restricted": {
+      "model": "serverworks:block/gateway_restricted",
+      "x": 270
+    },
+    "active=false,facing=down,formed=false,portal=closed": {
+      "model": "serverworks:block/gateway",
+      "x": 90
+    },
+    "active=false,facing=down,formed=true,portal=closed": {
+      "model": "serverworks:block/gateway_on",
+      "x": 90
+    },
+    "active=true,facing=down,formed=false,portal=closed": {
+      "model": "serverworks:block/gateway",
+      "x": 90
+    },
+    "active=true,facing=down,formed=true,portal=closed": {
+      "model": "serverworks:block/gateway_on",
+      "x": 90
+    },
+    "active=false,facing=down,formed=false,portal=open": {
+      "model": "serverworks:block/gateway",
+      "x": 90
+    },
+    "active=false,facing=down,formed=true,portal=open": {
+      "model": "serverworks:block/gateway_open",
+      "x": 90
+    },
+    "active=true,facing=down,formed=false,portal=open": {
+      "model": "serverworks:block/gateway",
+      "x": 90
+    },
+    "active=true,facing=down,formed=true,portal=open": {
+      "model": "serverworks:block/gateway_open",
+      "x": 90
+    },
+    "active=false,facing=down,formed=false,portal=restricted": {
+      "model": "serverworks:block/gateway",
+      "x": 90
+    },
+    "active=false,facing=down,formed=true,portal=restricted": {
+      "model": "serverworks:block/gateway_restricted",
+      "x": 90
+    },
+    "active=true,facing=down,formed=false,portal=restricted": {
+      "model": "serverworks:block/gateway",
+      "x": 90
+    },
+    "active=true,facing=down,formed=true,portal=restricted": {
+      "model": "serverworks:block/gateway_restricted",
+      "x": 90
+    }
+  }
+}

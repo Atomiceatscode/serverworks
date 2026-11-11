@@ -1,0 +1,27 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "serverworks:netherite_rack_casing"
+    },
+    "title": {
+      "translate": "advancements.serverworks.netherite_rack.title"
+    },
+    "description": {
+      "translate": "advancements.serverworks.netherite_rack.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "parent": "serverworks:main/build_rack"
+}

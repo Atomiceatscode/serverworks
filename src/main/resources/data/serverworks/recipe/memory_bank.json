@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": "minecraft:gold_ingot",
+    "Q": "minecraft:quartz",
+    "C": "serverworks:iron_rack_casing",
+    "R": "minecraft:redstone"
+  },
+  "pattern": [
+    "GQG",
+    "QCQ",
+    "GRG"
+  ],
+  "result": {
+    "id": "serverworks:memory_bank"
+  }
+}

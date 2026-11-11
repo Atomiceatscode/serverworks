@@ -1,0 +1,18 @@
+{
+  "model": {
+    "type": "minecraft:composite",
+    "models": [
+      {
+        "type": "minecraft:model",
+        "model": "serverworks:item/mod_disk"
+      },
+      {
+        "type": "minecraft:special",
+        "base": "serverworks:item/mod_disk",
+        "model": {
+          "type": "serverworks:disk_label"
+        }
+      }
+    ]
+  }
+}

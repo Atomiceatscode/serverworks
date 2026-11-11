@@ -1,0 +1,78 @@
+[
+ {
+  "game_versions": [
+   "26.3"
+  ],
+  "loaders": [
+   "fabric",
+   "quilt"
+  ],
+  "environment": "client_or_server_prefers_both",
+  "id": "fWv5bnZk",
+  "project_id": "gvQqBUqZ",
+  "author_id": "uhPSqlnd",
+  "featured": false,
+  "name": "Lithium 0.26.3 for Fabric",
+  "version_number": "mc26.3-0.26.3-fabric",
+  "changelog": "Lithium 0.26.3 for Minecraft 26.3.x fixes several issues.\n\nMake sure to take a backup of your world before using the mod and please report any bugs and mod compatibility issues at the [issue tracker](https://github.com/CaffeineMC/lithium-fabric/issues). You can check the [description of each optimization](https://github.com/CaffeineMC/lithium/blob/mc26.3-0.26.3/lithium-mixin-config.md) and how to disable it when encountering a problem.\n\n## Fixes\n- Avoid caching chest inventories when the corresponding block state is a chest half\n- Fix removed player memory leak in MapItemSavedData when maps are in item frames. Also avoid sending unnecessary map data packets\n- Fix entity step up movement collision not including hard entities",
+  "changelog_url": null,
+  "date_published": "2026-10-28T22:31:14.497352Z",
+  "downloads": 1073271,
+  "version_type": "release",
+  "status": "listed",
+  "requested_status": null,
+  "files": [
+   {
+    "id": "BXnzd18M",
+    "hashes": {
+     "sha512": "2ca92fb530135d2baddf0ba4cc4f93976234876a38c4aa02b487b2552400f005afcfbeebf5373fb4396fe2020537a42d7597b8da5a52b904355ef51d5fef07ad",
+     "sha1": "2d3afe9d43bb2549e23479d8d93e644ff366bebf"
+    },
+    "url": "https://cdn.modrinth.com/data/gvQqBUqZ/versions/fWv5bnZk/lithium-fabric-0.26.3%2Bmc26.3.jar",
+    "filename": "lithium-fabric-0.26.3+mc26.3.jar",
+    "primary": true,
+    "size": 919892,
+    "file_type": null
+   }
+  ],
+  "dependencies": []
+ },
+ {
+  "game_versions": [
+   "26.3"
+  ],
+  "loaders": [
+   "fabric",
+   "quilt"
+  ],
+  "environment": "client_or_server_prefers_both",
+  "id": "xS0Q8LSi",
+  "project_id": "gvQqBUqZ",
+  "author_id": "uhPSqlnd",
+  "featured": false,
+  "name": "Lithium 0.26.2 for Fabric",
+  "version_number": "mc26.3-0.26.2-fabric",
+  "changelog": "Lithium 0.26.2 for Minecraft 26.3.x fixes several issues.\n\nMake sure to take a backup of your world before using the mod and please report any bugs and mod compatibility issues at the [issue tracker](https://github.com/CaffeineMC/lithium-fabric/issues). You can check the [description of each optimization](https://github.com/CaffeineMC/lithium/blob/mc26.3-0.26.2/lithium-mixin-config.md) and how to disable it when encountering a problem.\n\n## Changes\n- Re-enable previously disabled optimization after fixing initialization crash\n- Fix api jar build\n- Fix mod compatibility issue with Streams Reflowing\n- Fix movement notification of stationary minecarts (Thanks to HaHaWTH)\n- Fix memory leak of vibration system optimization",
+  "changelog_url": null,
+  "date_published": "2026-09-28T03:43:35.593224Z",
+  "downloads": 2181511,
+  "version_type": "release",
+  "status": "listed",
+  "requested_status": null,
+  "files": [
+   {
+    "id": "z35EfMHn",
+    "hashes": {
+     "sha1": "dd5a4ec2c68d7601d8bce9076f789c55a5f8bef3",
+     "sha512": "4d7fee66132eedc71feab9390b92c95d7058edbdad0fecfac1d836a2950b97a7ca463afbede61c7ef361ce65e1f927ab9e89dde5bf2e0e0ce486afb5c5dbee40"
+    },
+    "url": "https://cdn.modrinth.com/data/gvQqBUqZ/versions/xS0Q8LSi/lithium-fabric-0.26.2%2Bmc26.3.jar",
+    "filename": "lithium-fabric-0.26.2+mc26.3.jar",
+    "primary": true,
+    "size": 914543,
+    "file_type": null
+   }
+  ],
+  "dependencies": []
+ }
+]

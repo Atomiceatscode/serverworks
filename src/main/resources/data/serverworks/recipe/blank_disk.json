@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "N": "minecraft:iron_nugget",
+    "P": "minecraft:paper",
+    "R": "minecraft:redstone",
+    "I": "minecraft:iron_ingot"
+  },
+  "pattern": [
+    "NPN",
+    "PRP",
+    "NIN"
+  ],
+  "result": {
+    "id": "serverworks:blank_disk",
+    "count": 4
+  }
+}

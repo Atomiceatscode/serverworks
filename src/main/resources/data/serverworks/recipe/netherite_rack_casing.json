@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": "serverworks:diamond_rack_casing",
+    "U": "minecraft:netherite_ingot"
+  },
+  "pattern": [
+    "CCC",
+    "CUC",
+    "CCC"
+  ],
+  "result": {
+    "id": "serverworks:netherite_rack_casing",
+    "count": 8
+  }
+}

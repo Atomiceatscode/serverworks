@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "serverworks:iron_rack_casing",
+    "serverworks:blank_disk",
+    "minecraft:redstone",
+    "minecraft:grass_block"
+  ],
+  "result": {
+    "id": "serverworks:vanilla_platform_module"
+  }
+}

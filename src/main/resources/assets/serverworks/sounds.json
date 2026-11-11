@@ -1,0 +1,62 @@
+{
+  "rack_hum": {
+    "subtitle": "subtitles.serverworks.rack_hum",
+    "sounds": [
+      "serverworks:rack_hum"
+    ]
+  },
+  "rack_boot": {
+    "subtitle": "subtitles.serverworks.rack_boot",
+    "sounds": [
+      "serverworks:rack_boot"
+    ]
+  },
+  "rack_power_down": {
+    "subtitle": "subtitles.serverworks.rack_power_down",
+    "sounds": [
+      "serverworks:rack_power_down"
+    ]
+  },
+  "rack_alarm": {
+    "subtitle": "subtitles.serverworks.rack_alarm",
+    "sounds": [
+      "serverworks:rack_alarm"
+    ]
+  },
+  "drive_insert": {
+    "subtitle": "subtitles.serverworks.drive_insert",
+    "sounds": [
+      "serverworks:drive_insert"
+    ]
+  },
+  "drive_eject": {
+    "subtitle": "subtitles.serverworks.drive_eject",
+    "sounds": [
+      "serverworks:drive_eject"
+    ]
+  },
+  "drive_seek": {
+    "subtitle": "subtitles.serverworks.drive_seek",
+    "sounds": [
+      "serverworks:drive_seek"
+    ]
+  },
+  "disk_write": {
+    "subtitle": "subtitles.serverworks.disk_write",
+    "sounds": [
+      "serverworks:disk_write"
+    ]
+  },
+  "gateway_open": {
+    "subtitle": "subtitles.serverworks.gateway_open",
+    "sounds": [
+      "serverworks:gateway_open"
+    ]
+  },
+  "gateway_travel": {
+    "subtitle": "subtitles.serverworks.gateway_travel",
+    "sounds": [
+      "serverworks:gateway_travel"
+    ]
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "variants": {
+    "active=false,facing=north,formed=false": {
+      "model": "serverworks:block/memory_bank"
+    },
+    "active=false,facing=north,formed=true": {
+      "model": "serverworks:block/memory_bank_on"
+    },
+    "active=true,facing=north,formed=false": {
+      "model": "serverworks:block/memory_bank"
+    },
+    "active=true,facing=north,formed=true": {
+      "model": "serverworks:block/memory_bank_active"
+    },
+    "active=false,facing=east,formed=false": {
+      "model": "serverworks:block/memory_bank",
+      "y": 90
+    },
+    "active=false,facing=east,formed=true": {
+      "model": "serverworks:block/memory_bank_on",
+      "y": 90
+    },
+    "active=true,facing=east,formed=false": {
+      "model": "serverworks:block/memory_bank",
+      "y": 90
+    },
+    "active=true,facing=east,formed=true": {
+      "model": "serverworks:block/memory_bank_active",
+      "y": 90
+    },
+    "active=false,facing=south,formed=false": {
+      "model": "serverworks:block/memory_bank",
+      "y": 180
+    },
+    "active=false,facing=south,formed=true": {
+      "model": "serverworks:block/memory_bank_on",
+      "y": 180
+    },
+    "active=true,facing=south,formed=false": {
+      "model": "serverworks:block/memory_bank",
+      "y": 180
+    },
+    "active=true,facing=south,formed=true": {
+      "model": "serverworks:block/memory_bank_active",
+      "y": 180
+    },
+    "active=false,facing=west,formed=false": {
+      "model": "serverworks:block/memory_bank",
+      "y": 270
+    },
+    "active=false,facing=west,formed=true": {
+      "model": "serverworks:block/memory_bank_on",
+      "y": 270
+    },
+    "active=true,facing=west,formed=false": {
+      "model": "serverworks:block/memory_bank",
+      "y": 270
+    },
+    "active=true,facing=west,formed=true": {
+      "model": "serverworks:block/memory_bank_active",
+      "y": 270
+    },
+    "active=false,facing=up,formed=false": {
+      "model": "serverworks:block/memory_bank",
+      "x": 270
+    },
+    "active=false,facing=up,formed=true": {
+      "model": "serverworks:block/memory_bank_on",
+      "x": 270
+    },
+    "active=true,facing=up,formed=false": {
+      "model": "serverworks:block/memory_bank",
+      "x": 270
+    },
+    "active=true,facing=up,formed=true": {
+      "model": "serverworks:block/memory_bank_active",
+      "x": 270
+    },
+    "active=false,facing=down,formed=false": {
+      "model": "serverworks:block/memory_bank",
+      "x": 90
+    },
+    "active=false,facing=down,formed=true": {
+      "model": "serverworks:block/memory_bank_on",
+      "x": 90
+    },
+    "active=true,facing=down,formed=false": {
+      "model": "serverworks:block/memory_bank",
+      "x": 90
+    },
+    "active=true,facing=down,formed=true": {
+      "model": "serverworks:block/memory_bank_active",
+      "x": 90
+    }
+  }
+}

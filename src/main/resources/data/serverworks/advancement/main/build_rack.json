@@ -1,0 +1,27 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "serverworks:iron_rack_casing"
+    },
+    "title": {
+      "translate": "advancements.serverworks.build_rack.title"
+    },
+    "description": {
+      "translate": "advancements.serverworks.build_rack.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "parent": "serverworks:main/write_disk"
+}

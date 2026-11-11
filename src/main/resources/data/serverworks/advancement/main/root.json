@@ -1,0 +1,38 @@
+{
+  "criteria": {
+    "has_item": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "serverworks:disk_writer",
+              "serverworks:blank_disk",
+              "serverworks:operators_manual"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "serverworks:server_core"
+    },
+    "title": {
+      "translate": "advancements.serverworks.root.title"
+    },
+    "description": {
+      "translate": "advancements.serverworks.root.description"
+    },
+    "frame": "task",
+    "show_toast": false,
+    "announce_to_chat": false,
+    "background": "serverworks:gui/advancements/backgrounds/rack"
+  },
+  "requirements": [
+    [
+      "has_item"
+    ]
+  ]
+}

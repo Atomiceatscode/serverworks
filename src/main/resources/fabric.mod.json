@@ -1,0 +1,44 @@
+{
+	"schemaVersion": 1,
+	"id": "serverworks",
+	"version": "${version}",
+	"name": "Serverworks",
+	"description": "Build a server rack, load it with mods and plugins from the Modrinth catalog, and switch on a real Minecraft server your friends can walk into.",
+	"authors": [
+		"Serverworks contributors"
+	],
+	"license": "MIT",
+	"icon": "assets/serverworks/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"dev.serverworks.Serverworks"
+		],
+		"client": [
+			"dev.serverworks.client.ServerworksClient"
+		],
+		"modmenu": [
+			"dev.serverworks.client.compat.ModMenuIntegration"
+		],
+		"jade": [
+			"dev.serverworks.client.compat.JadePlugin"
+		]
+	},
+	"mixins": [
+		"serverworks.mixins.json",
+		{
+			"config": "serverworks.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.20.1",
+		"minecraft": "~26.3",
+		"java": ">=25",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"modmenu": "*",
+		"jade": "*"
+	}
+}

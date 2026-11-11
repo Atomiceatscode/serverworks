@@ -1,0 +1,143 @@
+plugins {
+	id 'net.fabricmc.fabric-loom' version "${loom_version}"
+}
+
+base {
+	archivesName = 'serverworks'
+}
+
+repositories {
+	mavenCentral()
+	// Optional integrations (Mod Menu, Jade), compiled against but never bundled.
+	exclusiveContent {
+		forRepository {
+			maven {
+				name = 'Modrinth'
+				url = 'https://api.modrinth.com/maven'
+			}
+		}
+		filter {
+			includeGroup 'maven.modrinth'
+		}
+	}
+}
+
+loom {
+	splitEnvironmentSourceSets()
+
+	mods {
+		"serverworks" {
+			sourceSet sourceSets.main
+			sourceSet sourceSets.client
+		}
+	}
+}
+
+fabricApi {
+	// Client game tests drive a real client and save screenshots for visual review.
+	// Run with: ./gradlew runClientGameTest
+	configureTests {
+		createSourceSet = true
+		modId = 'serverworks-test'
+		enableGameTests = false
+		enableClientGameTests = true
+		// The dedicated-server walkthrough starts a throwaway test server, which only runs once
+		// the Minecraft EULA is accepted. Accepted by the project owner for that test server alone.
+		eula = true
+	}
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+	// Pure-Java WebP decoding for catalog icons (Modrinth serves icons as WebP). Bundled in the jar.
+	[
+		"com.twelvemonkeys.imageio:imageio-webp",
+		"com.twelvemonkeys.imageio:imageio-core",
+		"com.twelvemonkeys.imageio:imageio-metadata",
+		"com.twelvemonkeys.common:common-lang",
+		"com.twelvemonkeys.common:common-io",
+		"com.twelvemonkeys.common:common-image",
+	].each { module ->
+		include(implementation("${module}:${project.twelvemonkeys_version}"))
+	}
+
+	compileOnly "maven.modrinth:modmenu:${project.modmenu_version}"
+	compileOnly "maven.modrinth:jade:${project.jade_version}"
+	// Present in the development game only, so the integrations get exercised there.
+	localRuntime "maven.modrinth:modmenu:${project.modmenu_version}"
+	localRuntime "maven.modrinth:jade:${project.jade_version}"
+
+	testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
+	testImplementation "org.junit.jupiter:junit-jupiter-params:5.10.0"
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+processResources {
+	def version = project.version
+	inputs.property "version", version
+
+	filesMatching("fabric.mod.json") {
+		expand "version": version
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 25
+	it.options.encoding = 'UTF-8'
+}
+
+java {
+	withSourcesJar()
+	sourceCompatibility = JavaVersion.VERSION_25
+	targetCompatibility = JavaVersion.VERSION_25
+}
+
+test {
+	useJUnitPlatform {
+		excludeTags 'network'
+	}
+	testLogging {
+		events 'failed', 'skipped'
+		exceptionFormat = 'full'
+	}
+}
+
+// The game can exit normally after a test fails (for example when the client is already
+// closing), so the log is checked as well as the exit code.
+tasks.named('runClientGameTest') {
+	def log = layout.buildDirectory.file('run/clientGameTest/logs/latest.log')
+	doLast {
+		def file = log.get().asFile
+		if (file.exists() && file.text.contains('Client gametests failed')) {
+			throw new GradleException("Client game tests failed; see ${file}")
+		}
+	}
+}
+
+// Downloads and runs real servers for every supported platform. Slow; needs the internet.
+tasks.register('hostSmokeTest', Test) {
+	description = 'Installs, starts and stops a real server for each supported platform.'
+	group = 'verification'
+	testClassesDirs = sourceSets.test.output.classesDirs
+	classpath = sourceSets.test.runtimeClasspath
+	useJUnitPlatform {
+		includeTags 'network'
+	}
+	outputs.upToDateWhen { false }
+	// Run one or a few platforms with -Pplatforms=paper,fabric
+	systemProperty 'serverworks.smoke.only', providers.gradleProperty('platforms').getOrElse('')
+	testLogging {
+		events 'passed', 'failed', 'skipped'
+		showStandardStreams = true
+		exceptionFormat = 'full'
+	}
+}
+
+jar {
+	from('LICENSE') {
+		rename { "${it}_serverworks" }
+	}
+}

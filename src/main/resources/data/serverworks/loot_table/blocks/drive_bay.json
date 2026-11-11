@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "serverworks:drive_bay"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "serverworks:blocks/drive_bay"
+}

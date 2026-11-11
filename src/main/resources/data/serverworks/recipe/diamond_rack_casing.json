@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": "serverworks:iron_rack_casing",
+    "U": "minecraft:diamond"
+  },
+  "pattern": [
+    "CUC",
+    "C C",
+    "CUC"
+  ],
+  "result": {
+    "id": "serverworks:diamond_rack_casing",
+    "count": 6
+  }
+}

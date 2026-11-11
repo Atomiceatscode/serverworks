@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "serverworks:iron_rack_casing",
+    "serverworks:blank_disk",
+    "minecraft:redstone",
+    "minecraft:white_wool"
+  ],
+  "result": {
+    "id": "serverworks:fabric_platform_module"
+  }
+}

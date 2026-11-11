@@ -1,0 +1,27 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "serverworks:link_card"
+    },
+    "title": {
+      "translate": "advancements.serverworks.proxy.title"
+    },
+    "description": {
+      "translate": "advancements.serverworks.proxy.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "parent": "serverworks:main/go_through"
+}

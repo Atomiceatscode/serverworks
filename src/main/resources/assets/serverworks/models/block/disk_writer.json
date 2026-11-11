@@ -1,0 +1,10 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "top": "serverworks:block/disk_writer_top",
+    "bottom": "serverworks:block/disk_writer_bottom",
+    "front": "serverworks:block/disk_writer_front",
+    "side": "serverworks:block/disk_writer_side",
+    "particle": "serverworks:block/disk_writer_side"
+  }
+}

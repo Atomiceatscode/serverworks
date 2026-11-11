@@ -1,0 +1,18 @@
+{
+  "model": {
+    "type": "minecraft:composite",
+    "models": [
+      {
+        "type": "minecraft:model",
+        "model": "serverworks:item/pack_cartridge"
+      },
+      {
+        "type": "minecraft:special",
+        "base": "serverworks:item/pack_cartridge",
+        "model": {
+          "type": "serverworks:disk_label"
+        }
+      }
+    ]
+  }
+}

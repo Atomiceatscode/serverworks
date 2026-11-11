@@ -1,0 +1,52 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "serverworks:block/netherite_rack_casing"
+    },
+    "accent=none,formed=true": {
+      "model": "serverworks:block/netherite_rack_casing"
+    },
+    "accent=vanilla,formed=true": {
+      "model": "serverworks:block/netherite_rack_casing_vanilla"
+    },
+    "accent=fabric,formed=true": {
+      "model": "serverworks:block/netherite_rack_casing_fabric"
+    },
+    "accent=quilt,formed=true": {
+      "model": "serverworks:block/netherite_rack_casing_quilt"
+    },
+    "accent=neoforge,formed=true": {
+      "model": "serverworks:block/netherite_rack_casing_neoforge"
+    },
+    "accent=forge,formed=true": {
+      "model": "serverworks:block/netherite_rack_casing_forge"
+    },
+    "accent=paper,formed=true": {
+      "model": "serverworks:block/netherite_rack_casing_paper"
+    },
+    "accent=purpur,formed=true": {
+      "model": "serverworks:block/netherite_rack_casing_purpur"
+    },
+    "accent=folia,formed=true": {
+      "model": "serverworks:block/netherite_rack_casing_folia"
+    },
+    "accent=spigot,formed=true": {
+      "model": "serverworks:block/netherite_rack_casing_spigot"
+    },
+    "accent=bukkit,formed=true": {
+      "model": "serverworks:block/netherite_rack_casing_bukkit"
+    },
+    "accent=sponge,formed=true": {
+      "model": "serverworks:block/netherite_rack_casing_sponge"
+    },
+    "accent=velocity,formed=true": {
+      "model": "serverworks:block/netherite_rack_casing_velocity"
+    },
+    "accent=bungeecord,formed=true": {
+      "model": "serverworks:block/netherite_rack_casing_bungeecord"
+    },
+    "accent=waterfall,formed=true": {
+      "model": "serverworks:block/netherite_rack_casing_waterfall"
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": "minecraft:iron_ingot",
+    "B": "serverworks:blank_disk",
+    "C": "serverworks:iron_rack_casing",
+    "R": "minecraft:redstone"
+  },
+  "pattern": [
+    "IBI",
+    "BCB",
+    "IRI"
+  ],
+  "result": {
+    "id": "serverworks:drive_bay"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "replace": false,
+  "values": [
+    "serverworks:bukkit_platform_module",
+    "serverworks:bungeecord_platform_module",
+    "serverworks:disk_writer",
+    "serverworks:drive_bay",
+    "serverworks:fabric_platform_module",
+    "serverworks:folia_platform_module",
+    "serverworks:forge_platform_module",
+    "serverworks:gateway",
+    "serverworks:iron_rack_casing",
+    "serverworks:memory_bank",
+    "serverworks:neoforge_platform_module",
+    "serverworks:paper_platform_module",
+    "serverworks:purpur_platform_module",
+    "serverworks:quilt_platform_module",
+    "serverworks:server_core",
+    "serverworks:spigot_platform_module",
+    "serverworks:sponge_platform_module",
+    "serverworks:status_display",
+    "serverworks:vanilla_platform_module",
+    "serverworks:velocity_platform_module",
+    "serverworks:vent",
+    "serverworks:waterfall_platform_module"
+  ]
+}

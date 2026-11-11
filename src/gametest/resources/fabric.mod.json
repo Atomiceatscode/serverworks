@@ -1,0 +1,20 @@
+{
+	"schemaVersion": 1,
+	"id": "serverworks-test",
+	"version": "1.0.0",
+	"name": "Serverworks visual tests",
+	"environment": "*",
+	"entrypoints": {
+		"fabric-client-gametest": [
+			"dev.serverworks.test.DiskWriterVisualTest",
+			"dev.serverworks.test.RackVisualTest",
+			"dev.serverworks.test.RackServerVisualTest",
+			"dev.serverworks.test.ProxyVisualTest",
+			"dev.serverworks.test.PolishVisualTest",
+			"dev.serverworks.test.DedicatedVisualTest"
+		]
+	},
+	"depends": {
+		"serverworks": "*"
+	}
+}

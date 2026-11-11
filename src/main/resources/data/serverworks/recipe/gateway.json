@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "O": "minecraft:obsidian",
+    "E": "minecraft:ender_pearl",
+    "C": "serverworks:iron_rack_casing"
+  },
+  "pattern": [
+    "OEO",
+    "ECE",
+    "OEO"
+  ],
+  "result": {
+    "id": "serverworks:gateway"
+  }
+}
