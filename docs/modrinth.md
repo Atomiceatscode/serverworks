@@ -21,6 +21,22 @@ been published.
 | Dependencies | Fabric API (required); Mod Menu, Jade (optional) |
 | Source | the project's Git repository, once published |
 
+## Version 1.0.1
+
+- File: `build/libs/serverworks-1.0.1.jar`
+- Release channel: Release
+- Changelog:
+  - Search the Disk Writer by author: type `@name`, or click an author's name.
+  - Drag a project onto the Disk Writer's panel to pick it; Mac trackpad taps now work.
+  - "Serverworks Showcase" switch on the Create World screen builds a tour of every block.
+  - The Operator's Manual draws every crafting recipe.
+  - Press B on a rack server to go back; a message on arrival says how.
+  - Redrawn Platform Module textures.
+  - Fixed: players were refused by the whitelist on Fabric, Forge, NeoForge, Quilt and
+    Vanilla racks in offline mode.
+  - Fixed: a rack could be given a port another game's rack was using.
+  - Fixed: the console hint overflowed the Server Core panel.
+
 ## Version 1.0.0
 
 - File: `build/libs/serverworks-1.0.0.jar`
