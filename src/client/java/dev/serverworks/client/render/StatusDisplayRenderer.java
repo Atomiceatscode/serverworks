@@ -23,7 +23,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Draws a Status Display's three lines on its screen, lit as if the screen glowed. */
+/** Draws a Status Display's lines and players' heads on its screen, lit as if the screen glowed. */
 public final class StatusDisplayRenderer implements BlockEntityRenderer<StatusDisplayBlockEntity, StatusDisplayRenderer.State> {
 	/** Text scale: blocks per font pixel. A sign uses about 0.0104. */
 	private static final float SCALE = 0.016f;
@@ -31,12 +31,17 @@ public final class StatusDisplayRenderer implements BlockEntityRenderer<StatusDi
 	/** The screen area on the texture, in blocks. */
 	private static final float SCREEN_WIDTH = 13f / 16f;
 	private static final float SCREEN_TOP = 7f / 16f - 0.5f / 16f;
-	private static final float LINE_SPACING = 3.6f / 16f;
+	private static final float LINE_SPACING = 2.6f / 16f;
+	/** The line the heads are drawn on, and how big each head is. */
+	private static final int HEAD_LINE = 2;
+	private static final float HEAD_SIZE = 2.3f / 16f;
 
 	private final Font font;
+	private final net.minecraft.client.renderer.item.ItemModelResolver itemModelResolver;
 
 	public StatusDisplayRenderer(BlockEntityRendererProvider.Context context) {
 		this.font = context.font();
+		this.itemModelResolver = context.itemModelResolver();
 	}
 
 	public static final class State extends BlockEntityRenderState {
@@ -44,6 +49,7 @@ public final class StatusDisplayRenderer implements BlockEntityRenderer<StatusDi
 		boolean formed;
 		final List<FormattedCharSequence> lines = new ArrayList<>();
 		final List<Integer> colors = new ArrayList<>();
+		final List<net.minecraft.client.renderer.item.ItemStackRenderState> heads = new ArrayList<>();
 	}
 
 	@Override
@@ -61,6 +67,16 @@ public final class StatusDisplayRenderer implements BlockEntityRenderer<StatusDi
 				: Direction.NORTH;
 		state.lines.clear();
 		state.colors.clear();
+		state.heads.clear();
+		for (StatusDisplayBlockEntity.Head head : display.heads()) {
+			net.minecraft.world.item.ItemStack stack = new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.PLAYER_HEAD);
+			stack.set(net.minecraft.core.component.DataComponents.PROFILE,
+					net.minecraft.world.item.component.ResolvableProfile.createUnresolved(head.id()));
+			var itemState = new net.minecraft.client.renderer.item.ItemStackRenderState();
+			itemModelResolver.updateForTopItem(itemState, stack, net.minecraft.world.item.ItemDisplayContext.GUI,
+					display.getLevel(), null, head.id().hashCode());
+			state.heads.add(itemState);
+		}
 		for (DisplayLine line : display.lines()) {
 			Component text = line.key().isEmpty() ? Component.empty()
 					: Component.translatable(line.key(), line.args().toArray());
@@ -95,6 +111,17 @@ public final class StatusDisplayRenderer implements BlockEntityRenderer<StatusDi
 			poseStack.scale(scale, -scale, scale);
 			collector.submitText(poseStack, -width / 2f, -4f, line, false, Font.DisplayMode.POLYGON_OFFSET,
 					LightCoordsUtil.FULL_BRIGHT, state.colors.get(i), 0, 0);
+			poseStack.popPose();
+		}
+		// The players' heads, side by side and centred on their line.
+		int count = state.heads.size();
+		for (int i = 0; i < count; i++) {
+			poseStack.pushPose();
+			float x = (i - (count - 1) / 2f) * HEAD_SIZE * 1.15f;
+			poseStack.translate(x, SCREEN_TOP - (HEAD_LINE + 0.5f) * LINE_SPACING, 0.02f);
+			poseStack.scale(HEAD_SIZE, HEAD_SIZE, 0.01f);
+			state.heads.get(i).submit(poseStack, collector, LightCoordsUtil.FULL_BRIGHT,
+					net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY, 0);
 			poseStack.popPose();
 		}
 		poseStack.popPose();

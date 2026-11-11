@@ -50,6 +50,17 @@ public final class ModrinthJson {
 				intOr(root, "total_hits", hits.size()));
 	}
 
+	/** The project ids in a {@code /v3/collection/<id>} answer, at most a few hundred. */
+	public static List<String> collectionProjects(String json) {
+		List<String> ids = new ArrayList<>();
+		for (JsonElement id : array(object(json), "projects")) {
+			if (id.isJsonPrimitive() && ids.size() < 500) {
+				ids.add(id.getAsString());
+			}
+		}
+		return ids;
+	}
+
 	/** The exact username from a {@code /user/<name>} answer. */
 	public static String username(String json) {
 		String name = stringOr(object(json), "username", "");

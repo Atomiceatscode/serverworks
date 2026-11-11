@@ -362,7 +362,7 @@ def language():
         "serverworks.platform_group.plugin": "Plugin platform",
         "serverworks.platform_group.proxy": "Proxy platform",
 
-        "serverworks.disk_writer.search": "Search, or @author...",
+        "serverworks.disk_writer.search": "Search or @author",
         "serverworks.disk_writer.type.all": "All",
         "serverworks.disk_writer.sort.relevance": "Relevant",
         "serverworks.disk_writer.sort.downloads": "Popular",
@@ -722,6 +722,16 @@ def manual_text():
     lang["serverworks.manual.recipes.modules"] = "Platform Modules"
     lang["serverworks.manual.recipes.modules.body"] = "its platform's item:"
     lang["serverworks.manual.recipes.shapeless"] = "Any order"
+    lang["serverworks.recipe_viewer.mod_disk"] = "Written in a Disk Writer: put in a Blank Disk, search Modrinth, pick a project and take the disk. It stands for that project on any rack."
+    lang["serverworks.recipe_viewer.pack_cartridge"] = "Written in a Disk Writer from a Blank Disk by picking a modpack. A rack installs the pack's server side."
+    lang["serverworks.recipe_viewer.config_card"] = "Use it to choose a server's difficulty, game mode, PvP and more, then put it in a rack's Drive Bay."
+    lang["serverworks.recipe_viewer.world_drive"] = "Use it to name a world, give it a seed or copy a saved world. In a rack's Drive Bay, the rack plays its world."
+    lang["serverworks.disk_writer.favourites"] = "Show your favourites. Type collection:ID or paste a Modrinth collection link to list a collection."
+    lang["serverworks.disk_writer.favourites.empty"] = "No favourites yet. Click the star on a project to keep it here."
+    lang["serverworks.disk_writer.star"] = "Add to favourites"
+    lang["serverworks.disk_writer.unstar"] = "Remove from favourites"
+    lang["serverworks.display.stats"] = "%s GB \u00b7 up %s"
+    lang["serverworks.display.uptime"] = "Up %s"
     lang["serverworks.server_core.tab.backups"] = "Backups"
     lang["serverworks.server_core.backup_now"] = "Back Up Now"
     lang["serverworks.server_core.restore"] = "Restore"

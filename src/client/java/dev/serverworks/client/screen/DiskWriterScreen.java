@@ -78,6 +78,7 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 	private static final int TEXT_OK = 0xFF63E08A;
 	private static final int DROP_IDLE = 0xFF5A6684;
 	private static final int TEXT_PIN = 0xFF6FC3FF;
+	private static final int STAR_ON = 0xFFFFC84A;
 	private static final int DROP_LIT = 0xFF6FC3FF;
 	private static final int ROW_HOVER = 0xFF2E3648;
 	private static final int ROW_SELECTED = 0xFF3A4A6B;
@@ -115,6 +116,9 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 	private boolean draggingProject;
 
 	private @Nullable ProjectSummary selected;
+	/** While true the list shows starred projects instead of searching the catalog. */
+	private boolean favouritesMode;
+	private @Nullable Button starButton;
 	/** The version the disk will be pinned to, or null for the newest compatible one. */
 	private @Nullable String pinnedId;
 	private @Nullable String pinnedName;
@@ -139,13 +143,20 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 	protected void init() {
 		super.init();
 		String previous = search == null ? "" : search.getValue();
-		search = new EditBox(font, leftPos + 9, topPos + 18, 140, 14, Component.translatable("serverworks.disk_writer.search"));
+		search = new EditBox(font, leftPos + 9, topPos + 18, 122, 14, Component.translatable("serverworks.disk_writer.search"));
 		search.setMaxLength(64);
 		search.setHint(Component.translatable("serverworks.disk_writer.search").withStyle(ChatFormatting.DARK_GRAY));
 		search.setValue(previous);
 		search.setResponder(text -> searchCountdown = SEARCH_DELAY_TICKS);
 		addRenderableWidget(search);
 
+		starButton = addRenderableWidget(Button.builder(Component.literal(favouritesMode ? "\u2605" : "\u2606"), button -> {
+			favouritesMode = !favouritesMode;
+			button.setMessage(Component.literal(favouritesMode ? "\u2605" : "\u2606"));
+			startSearch();
+		}).bounds(leftPos + 133, topPos + 17, 18, 16)
+				.tooltip(net.minecraft.client.gui.components.Tooltip.create(Component.translatable("serverworks.disk_writer.favourites")))
+				.build());
 		typeButton = addRenderableWidget(Button.builder(typeLabel(), button -> {
 			typeIndex = (typeIndex + 1) % TYPE_FILTERS.size();
 			button.setMessage(typeLabel());
@@ -233,6 +244,33 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 
 	private void fetch(int offset) {
 		int requested = ++generation;
+		if (favouritesMode) {
+			if (offset == 0) {
+				List<ProjectSummary> starred = dev.serverworks.client.Favourites.matching(lastSearchedText);
+				onSearchDone(new SearchResult(starred, 0, starred.size(), starred.size()), null);
+				if (starred.isEmpty()) {
+					listMessage = Component.translatable("serverworks.disk_writer.favourites.empty");
+				}
+			}
+			return;
+		}
+		var collection = SearchQuery.collectionId(lastSearchedText);
+		if (collection.isPresent()) {
+			if (offset > 0) {
+				return;
+			}
+			loading = true;
+			try {
+				Serverworks.catalog().collection(collection.get()).whenComplete((list, error) -> minecraft.execute(() -> {
+					if (requested == generation) {
+						onSearchDone(list == null ? null : new SearchResult(list, 0, list.size(), list.size()), error);
+					}
+				}));
+			} catch (RuntimeException e) {
+				onSearchDone(null, e);
+			}
+			return;
+		}
 		loading = true;
 		ProjectType type = TYPE_FILTERS.get(typeIndex);
 		SearchQuery query = SearchQuery.parse(lastSearchedText)
@@ -493,7 +531,13 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 			}
 			extractIcon(graphics, project.iconUrl(), x + 5, rowY + 3, 16);
 			int textX = x + 26;
-			int textW = LIST_W - 30;
+			int textW = LIST_W - 42;
+			boolean starred = dev.serverworks.client.Favourites.contains(project.id());
+			if (starred || i == hovered) {
+				boolean overStar = i == hovered && overStar(i, mouseX, mouseY);
+				graphics.text(font, starred ? "\u2605" : "\u2606", x + LIST_W - 13, rowY + 7,
+						starred ? STAR_ON : overStar ? TEXT_LIGHT : TEXT_DIM, false);
+			}
 			graphics.text(font, clip(project.title(), textW), textX, rowY + 3, TEXT_LIGHT, false);
 			graphics.text(font, clip(subtitle(project), textW), textX, rowY + 13, TEXT_DIM, false);
 			if (i == hovered && overAuthor(i, mouseX, mouseY)) {
@@ -639,6 +683,11 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 			return;
 		}
 		ProjectSummary project = results.get(row);
+		if (overStar(row, mouseX, mouseY)) {
+			graphics.setTooltipForNextFrame(font, Component.translatable(dev.serverworks.client.Favourites.contains(project.id())
+					? "serverworks.disk_writer.unstar" : "serverworks.disk_writer.star"), mouseX, mouseY);
+			return;
+		}
 		if (overAuthor(row, mouseX, mouseY)) {
 			graphics.setTooltipForNextFrame(font, Component.translatable("serverworks.disk_writer.by_author", project.author()), mouseX, mouseY);
 			return;
@@ -707,6 +756,13 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 		}
 		int row = (int) ((mouseY - y + scroll) / ROW_H);
 		return row >= 0 && row < results.size() ? row : -1;
+	}
+
+	/** Whether the mouse is over a row's star, at its right end. */
+	private boolean overStar(int row, double mouseX, double mouseY) {
+		int x = leftPos + LIST_X + LIST_W - 16;
+		int rowY = topPos + LIST_Y + row * ROW_H - (int) scroll;
+		return mouseX >= x && mouseX < x + 14 && mouseY >= rowY + 4 && mouseY < rowY + 18;
 	}
 
 	/** Whether the mouse is over the author's name at the start of a row's second line. */
@@ -789,6 +845,14 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 				return super.mouseClicked(event, doubleClick);
 			}
 			int row = rowAt(event.x(), event.y());
+			if (row >= 0 && overStar(row, event.x(), event.y())) {
+				boolean now = dev.serverworks.client.Favourites.toggle(results.get(row));
+				minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, now ? 1.3F : 0.9F));
+				if (favouritesMode && !now) {
+					startSearch();
+				}
+				return true;
+			}
 			if (row >= 0 && overAuthor(row, event.x(), event.y())) {
 				searchAuthor(results.get(row).author());
 				return true;

@@ -64,7 +64,8 @@ public final class HostRuntime {
 			maybeBackUp(instance, now);
 			try {
 				StatusPinger.Status status = StatusPinger.ping("127.0.0.1", snapshot.port());
-				instance.reportPlayers(status.online(), status.max());
+				instance.reportPlayers(status.online(), status.max(), status.sample());
+				measureMemory(instance, now);
 				// Servers behind a proxy stay up even when empty: the proxy may send someone at any moment.
 				boolean mayHibernate = idleMinutes() > 0 && !links.containsKey(instance.rackId());
 				if (mayHibernate && tracker.observe(status.online(), now)) {
@@ -75,6 +76,29 @@ public final class HostRuntime {
 				// Busy or briefly unreachable: try again next round, and never sleep on a failed ping.
 				tracker.observe(-1, now);
 			}
+		}
+	}
+
+	private final Map<UUID, Long> lastMeasured = new ConcurrentHashMap<>();
+
+	/** Reads the server process's memory use every half minute, where the system can say. */
+	private void measureMemory(ServerInstance instance, long now) {
+		long last = lastMeasured.getOrDefault(instance.rackId(), 0L);
+		long pid = instance.pid();
+		if (pid < 0 || now - last < 30_000 || System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT).contains("win")) {
+			return;
+		}
+		lastMeasured.put(instance.rackId(), now);
+		try {
+			Process ps = new ProcessBuilder("ps", "-o", "rss=", "-p", Long.toString(pid)).redirectErrorStream(true).start();
+			String out = new String(ps.getInputStream().readAllBytes(), java.nio.charset.StandardCharsets.UTF_8).strip();
+			if (ps.waitFor(5, TimeUnit.SECONDS) && out.matches("\\d+")) {
+				instance.reportMemory((int) (Long.parseLong(out) / 1024));
+			}
+		} catch (IOException e) {
+			// No ps here; memory just is not shown.
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
 		}
 	}
 

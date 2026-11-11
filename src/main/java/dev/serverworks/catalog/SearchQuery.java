@@ -74,6 +74,15 @@ public record SearchQuery(
 		return of(String.join(" ", words)).withAuthor(author);
 	}
 
+	private static final Pattern COLLECTION = Pattern.compile(
+			"(?:collection:|(?:https?://)?(?:www\\.)?modrinth\\.com/collection/)([A-Za-z0-9]{1,16})/?");
+
+	/** The collection a player typed or pasted, as {@code collection:ID} or a modrinth.com link, if any. */
+	public static java.util.Optional<String> collectionId(String input) {
+		var matcher = COLLECTION.matcher(input == null ? "" : input.strip());
+		return matcher.matches() ? java.util.Optional.of(matcher.group(1)) : java.util.Optional.empty();
+	}
+
 	public SearchQuery withAuthor(String value) {
 		return new SearchQuery(text, types, loaders, gameVersions, categories, serverCapable, sort, offset, limit, value);
 	}

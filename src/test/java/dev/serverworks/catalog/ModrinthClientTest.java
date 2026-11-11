@@ -281,6 +281,25 @@ class ModrinthClientTest {
 		assertEquals(1, transport.requests.size(), "no search is sent for an author that does not exist");
 	}
 
+	@Test
+	void collectionsAreReadFromTextOrLinks() {
+		assertEquals(java.util.Optional.of("AbC123"), SearchQuery.collectionId("collection:AbC123"));
+		assertEquals(java.util.Optional.of("AbC123"), SearchQuery.collectionId("https://modrinth.com/collection/AbC123"));
+		assertEquals(java.util.Optional.of("AbC123"), SearchQuery.collectionId("modrinth.com/collection/AbC123/"));
+		assertTrue(SearchQuery.collectionId("lithium").isEmpty());
+		assertTrue(SearchQuery.collectionId("https://evil.example/collection/AbC123").isEmpty());
+	}
+
+	@Test
+	void collectionsListTheirProjectsInOrder() {
+		FakeTransport transport = new FakeTransport()
+				.respond(200, "{\"id\":\"AbC123\",\"projects\":[\"gvQqBUqZ\"]}", PLENTY)
+				.respond(200, "[" + fixture("project_lithium.json") + "]", PLENTY);
+		List<ProjectSummary> projects = client(transport).collection("AbC123").join();
+		assertEquals("https://api.modrinth.com/v3/collection/AbC123", transport.requests.getFirst().toString());
+		assertEquals(List.of("gvQqBUqZ"), projects.stream().map(ProjectSummary::id).toList());
+	}
+
 	private static ModrinthClient client(FakeTransport transport) {
 		return new ModrinthClient(ModrinthClient.DEFAULT_BASE, transport, "serverworks-test/1.0", () -> 0L,
 				new RecordingDelayer());

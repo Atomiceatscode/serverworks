@@ -22,6 +22,12 @@
 		],
 		"jade": [
 			"dev.serverworks.client.compat.JadePlugin"
+		],
+		"jei_mod_plugin": [
+			"dev.serverworks.client.compat.JeiIntegration"
+		],
+		"rei_client": [
+			"dev.serverworks.client.compat.ReiIntegration"
 		]
 	},
 	"mixins": [
@@ -39,6 +45,8 @@
 	},
 	"suggests": {
 		"modmenu": "*",
-		"jade": "*"
+		"jade": "*",
+		"jei": "*",
+		"roughlyenoughitems": "*"
 	}
 }

@@ -226,17 +226,20 @@ public final class ServerCoreBlockEntity extends BlockEntity implements MenuProv
 			}
 		}
 		if (!rack.displays().isEmpty()) {
-			List<DisplayLine> lines = displayLines(serverLevel, rack, snapshot, open);
+			List<DisplayLine> lines = displayLines(serverLevel, rack, snapshot, open, instance);
+			List<StatusDisplayBlockEntity.Head> heads = !running || instance == null ? List.of()
+					: instance.players().stream().map(p -> new StatusDisplayBlockEntity.Head(p.name(), p.id())).toList();
 			for (Pos pos : rack.displays()) {
 				if (serverLevel.getBlockEntity(new BlockPos(pos.x(), pos.y(), pos.z())) instanceof StatusDisplayBlockEntity display) {
-					display.show(lines);
+					display.show(lines, heads);
 				}
 			}
 		}
 	}
 
 	private static List<DisplayLine> displayLines(ServerLevel level, RackStructure rack,
-			dev.serverworks.host.ServerInstance.Snapshot snapshot, boolean open) {
+			dev.serverworks.host.ServerInstance.Snapshot snapshot, boolean open,
+			dev.serverworks.host.@Nullable ServerInstance instance) {
 		var state = snapshot.state();
 		String platform = rack.platform().translationKey();
 		if (state == dev.serverworks.host.ServerInstance.State.RUNNING) {
@@ -248,8 +251,9 @@ public final class ServerCoreBlockEntity extends BlockEntity implements MenuProv
 					? DisplayLine.of("serverworks.display.local", 0x9FB2DA, snapshot.port())
 					: publicAddress.isEmpty() ? DisplayLine.of("serverworks.display.port", 0x9FB2DA, snapshot.port())
 					: DisplayLine.of("serverworks.display.address", 0x9FB2DA, publicAddress, snapshot.port());
+			// Line three is left for the players' heads, drawn by the client.
 			return List.of(DisplayLine.of(open ? "serverworks.display.online" : "serverworks.display.online_mods",
-					open ? 0x63E08A : 0xFFB347), players, address);
+					open ? 0x63E08A : 0xFFB347), players, DisplayLine.EMPTY, stats(instance), address);
 		}
 		if (snapshot.hibernated() && state.canStart()) {
 			return List.of(DisplayLine.of("serverworks.display.sleeping", 0x6FC3FF), DisplayLine.of(platform, 0xFFFFFF),
@@ -262,6 +266,21 @@ public final class ServerCoreBlockEntity extends BlockEntity implements MenuProv
 			default -> DisplayLine.of(state.translationKey(), 0x6FC3FF);
 		};
 		return List.of(headline, DisplayLine.of(platform, 0xFFFFFF), DisplayLine.EMPTY);
+	}
+
+	/** "1.2 GB · up 3h 5m", or just the uptime when memory is unknown. */
+	private static DisplayLine stats(dev.serverworks.host.@Nullable ServerInstance instance) {
+		if (instance == null || instance.runningSince() == 0) {
+			return DisplayLine.EMPTY;
+		}
+		long minutes = (System.currentTimeMillis() - instance.runningSince()) / 60_000;
+		String uptime = minutes < 1 ? "<1m" : minutes < 60 ? minutes + "m" : (minutes / 60) + "h " + (minutes % 60) + "m";
+		int memory = instance.memoryMb();
+		if (memory <= 0) {
+			return DisplayLine.of("serverworks.display.uptime", 0x9FB2DA, uptime);
+		}
+		String gigabytes = String.format(java.util.Locale.ROOT, "%.1f", memory / 1024.0);
+		return DisplayLine.of("serverworks.display.stats", 0x9FB2DA, gigabytes, uptime);
 	}
 
 	public UUID rackId() {

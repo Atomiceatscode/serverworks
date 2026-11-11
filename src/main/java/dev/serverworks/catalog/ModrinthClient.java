@@ -97,6 +97,18 @@ public final class ModrinthClient {
 		return get("search", params).thenApply(ModrinthJson::searchResult);
 	}
 
+	/** The projects in a public Modrinth collection, in the collection's order. */
+	public CompletableFuture<List<ProjectSummary>> collection(String collectionId) {
+		// Collections are only in version 3 of the API, next to version 2 on the same host.
+		return get("../v3/collection/" + pathSegment(collectionId), Map.of())
+				.thenApply(ModrinthJson::collectionProjects)
+				.thenCompose(ids -> projects(ids).thenApply(found -> {
+					Map<String, ProjectSummary> byId = new LinkedHashMap<>();
+					found.forEach(project -> byId.put(project.id(), project));
+					return ids.stream().map(byId::get).filter(java.util.Objects::nonNull).toList();
+				}));
+	}
+
 	public CompletableFuture<ProjectSummary> project(String idOrSlug) {
 		return get("project/" + pathSegment(idOrSlug), Map.of()).thenApply(ModrinthJson::project);
 	}

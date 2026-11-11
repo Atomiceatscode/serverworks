@@ -229,6 +229,16 @@ public final class RackServerVisualTest implements FabricClientGameTest {
 			context.getInput().lookAt(corePos);
 			context.waitTicks(40);
 			context.takeScreenshot("trip_1_rack_live");
+
+			// With players on, the display shows their heads. The only player here is about to
+			// leave for the rack, so report them as on it for a moment to see how it looks.
+			java.util.UUID me = context.computeOnClient(client -> client.player.getUUID());
+			ServerInstance live = Serverworks.host().instances().peek(rackId);
+			for (int i = 0; i < 25; i++) {
+				live.reportPlayers(1, 40, List.of(new dev.serverworks.host.StatusPinger.Player("Player0", me)));
+				context.waitTicks(1);
+			}
+			context.takeScreenshot("trip_1b_display_heads");
 			String portal = server.computeOnServer(s -> s.getPlayerList().getPlayers().getFirst().level()
 					.getBlockState(gatewayPos).getValue(GatewayBlock.PORTAL).getSerializedName());
 			if (!portal.equals("open")) {

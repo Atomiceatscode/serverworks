@@ -25,8 +25,17 @@ public final class StatusPinger {
 	}
 
 	/** @param online -1 when the answer did not say */
-	public record Status(int online, int max) {
+	public record Status(int online, int max, java.util.List<Player> sample) {
+		public Status(int online, int max) {
+			this(online, max, java.util.List.of());
+		}
 	}
+
+	/** One of the players a server lists in its status; servers list up to a dozen. */
+	public record Player(String name, java.util.UUID id) {
+	}
+
+
 
 	public static Status ping(String host, int port) throws IOException {
 		try (Socket socket = new Socket()) {
@@ -73,7 +82,21 @@ public final class StatusPinger {
 			}
 			int online = players.has("online") ? players.get("online").getAsInt() : -1;
 			int max = players.has("max") ? players.get("max").getAsInt() : -1;
-			return new Status(online, max);
+			java.util.List<Player> sample = new java.util.ArrayList<>();
+			if (players.has("sample") && players.get("sample").isJsonArray()) {
+				for (JsonElement entry : players.getAsJsonArray("sample")) {
+					try {
+						JsonObject player = entry.getAsJsonObject();
+						String name = player.get("name").getAsString();
+						if (name.matches("[A-Za-z0-9_]{1,16}") && sample.size() < 12) {
+							sample.add(new Player(name, java.util.UUID.fromString(player.get("id").getAsString())));
+						}
+					} catch (RuntimeException e) {
+						// Some servers put decorative lines in the sample; they are not players.
+					}
+				}
+			}
+			return new Status(online, max, sample);
 		} catch (RuntimeException e) {
 			throw new IOException("Unreadable status", e);
 		}

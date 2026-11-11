@@ -75,9 +75,22 @@ dependencies {
 
 	compileOnly "maven.modrinth:modmenu:${project.modmenu_version}"
 	compileOnly "maven.modrinth:jade:${project.jade_version}"
+	compileOnly "maven.modrinth:jei:${project.jei_version}"
+	compileOnly "maven.modrinth:rei:${project.rei_version}"
+	// REI's API refers to Architectury's types, so compiling against it needs them too.
+	compileOnly "maven.modrinth:architectury-api:${project.architectury_version}"
 	// Present in the development game only, so the integrations get exercised there.
 	localRuntime "maven.modrinth:modmenu:${project.modmenu_version}"
 	localRuntime "maven.modrinth:jade:${project.jade_version}"
+	// Recipe viewers are only added to a run when asked: -PwithJei or -PwithRei.
+	if (project.hasProperty('withJei')) {
+		localRuntime "maven.modrinth:jei:${project.jei_version}"
+	}
+	if (project.hasProperty('withRei')) {
+		localRuntime "maven.modrinth:rei:${project.rei_version}"
+		localRuntime "maven.modrinth:architectury-api:${project.architectury_version}"
+		localRuntime "maven.modrinth:cloth-config:${project.cloth_config_version}"
+	}
 
 	testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
 	testImplementation "org.junit.jupiter:junit-jupiter-params:5.10.0"

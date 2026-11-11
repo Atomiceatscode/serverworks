@@ -331,11 +331,44 @@ public final class ServerInstance {
 	}
 
 	public synchronized void reportPlayers(int online, int max) {
-		if (state == State.RUNNING && (online != playersOnline || max != playersMax)) {
+		reportPlayers(online, max, List.of());
+	}
+
+	public synchronized void reportPlayers(int online, int max, List<StatusPinger.Player> sample) {
+		if (state == State.RUNNING && (online != playersOnline || max != playersMax || !sample.equals(players))) {
 			playersOnline = online;
 			playersMax = max;
+			players = List.copyOf(sample);
 			version.incrementAndGet();
 		}
+	}
+
+	private volatile List<StatusPinger.Player> players = List.of();
+	private volatile int memoryMb = -1;
+	private volatile long runningSince;
+
+	/** Who the server listed in its last status answer. */
+	public List<StatusPinger.Player> players() {
+		return players;
+	}
+
+	/** The server process's resident memory in megabytes, or -1 when unknown. */
+	public int memoryMb() {
+		return memoryMb;
+	}
+
+	public void reportMemory(int megabytes) {
+		memoryMb = megabytes;
+	}
+
+	/** When the server last reached Running, or 0 when it is not running. */
+	public long runningSince() {
+		return runningSince;
+	}
+
+	/** The running server's process id, or -1. */
+	public synchronized long pid() {
+		return process != null && process.isAlive() ? process.pid() : -1;
 	}
 
 	/**
@@ -453,6 +486,13 @@ public final class ServerInstance {
 	}
 
 	private void set(State next, int percent) {
+		if (next == State.RUNNING && state != State.RUNNING) {
+			runningSince = System.currentTimeMillis();
+		} else if (next != State.RUNNING) {
+			runningSince = 0;
+			players = List.of();
+			memoryMb = -1;
+		}
 		state = next;
 		progress = percent;
 		version.incrementAndGet();
