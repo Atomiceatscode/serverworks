@@ -1,4 +1,4 @@
-"""Regenerates the README's badges and stats block and docs/treemap.svg.
+"""Regenerates the README's badges and stats block.
 
 Usage, from the project root after `./gradlew build` (which runs the unit tests and builds the jar):
     python3 -I scripts/stats.py
@@ -197,81 +197,6 @@ def stats_block(stats, files):
     return "\n".join(lines)
 
 
-# ---- treemap ----
-
-def squarify(items, x, y, w, h):
-    """Squarified treemap: items are (value, payload) sorted largest first; yields (payload, x, y, w, h)."""
-    items = [i for i in items if i[0] > 0]
-    if not items:
-        return
-    total = sum(v for v, _ in items)
-    scale = w * h / total
-    items = [(v * scale, p) for v, p in items]
-
-    def worst(row, side):
-        s = sum(v for v, _ in row)
-        return max(max(side * side * v / (s * s), (s * s) / (side * side * v)) for v, _ in row)
-
-    while items:
-        side = min(w, h)
-        row = [items.pop(0)]
-        while items and worst(row + [items[0]], side) <= worst(row, side):
-            row.append(items.pop(0))
-        s = sum(v for v, _ in row)
-        if w >= h:
-            col = s / h
-            yy = y
-            for v, p in row:
-                hh = v / col
-                yield p, x, yy, col, hh
-                yy += hh
-            x += col
-            w -= col
-        else:
-            rh = s / w
-            xx = x
-            for v, p in row:
-                ww = v / rh
-                yield p, xx, y, ww, rh
-                xx += ww
-            y += rh
-            h -= rh
-
-
-def treemap(files):
-    width, height, top = 960, 520, 29
-    legend, lx = [], 8
-    present = {module for _, _, module, _ in files}
-    for _, (module, color) in MODULES:
-        if module in present:
-            legend.append(f'<rect x="{lx}" y="8" width="12" height="12" rx="2" fill="{color}"/>'
-                          f'<text x="{lx + 17}" y="18" font-size="12" fill="#c9d1d9">{html.escape(module)}</text>')
-            lx += 17 + 7 * len(module) + 20
-    boxes = []
-    ordered = sorted(((lines, (rel, lines, color)) for rel, lines, _, color in files), key=lambda t: -t[0])
-    for (rel, lines, color), x, y, w, h in squarify(ordered, 1, top, width - 2, height - top - 1):
-        name = rel.rsplit("/", 1)[-1]
-        box = [f'<g><title>{html.escape(rel)} ({lines} lines)</title>'
-               f'<rect x="{x:.1f}" y="{y:.1f}" width="{max(w - 2, 0.5):.1f}" height="{max(h - 2, 0.5):.1f}" rx="3" '
-               f'fill="{color}" fill-opacity="0.85"/>']
-        stem = name.rsplit(".", 1)[0]
-        # Bold 12px text is about 7.3px a character, regular 10px about 6.1px.
-        big = next((label for label in (name, stem) if w > 7.3 * len(label) + 12), None)
-        small = next((label for label in (name, stem) if w > 6.1 * len(label) + 8), None)
-        if big and h > 34:
-            box.append(f'<text x="{x + 6:.1f}" y="{y + 17:.1f}" font-size="12" font-weight="600" fill="#fff">'
-                       f'{html.escape(big)}</text><text x="{x + 6:.1f}" y="{y + 32:.1f}" font-size="11" fill="#fff" '
-                       f'fill-opacity="0.8">{lines} lines</text>')
-        elif small and h > 18:
-            box.append(f'<text x="{x + 4:.1f}" y="{y + 14:.1f}" font-size="10" fill="#fff">{html.escape(small)}</text>')
-        box.append("</g>")
-        boxes.append("".join(box))
-    return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" '
-            f'font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif">\n'
-            f'<rect width="{width}" height="{height}" fill="#0d1117"/>\n' + "".join(legend) + "\n"
-            + "\n".join(boxes) + "\n</svg>\n")
-
-
 def replace_block(text, name, block):
     pattern = re.compile(rf"<!-- {name}:start -->.*?<!-- {name}:end -->", re.S)
     if not pattern.search(text):
@@ -296,10 +221,7 @@ def main():
     text = replace_block(text, "badges", badges(stats))
     text = replace_block(text, "stats", stats_block(stats, files))
     readme.write_text(text, encoding="utf-8")
-    (ROOT / "docs").mkdir(exist_ok=True)
-    (ROOT / "docs/treemap.svg").write_text(treemap(files), encoding="utf-8")
-    print(f"{stats['lines']:,} lines, {stats['tests'][1]}/{stats['tests'][0]} unit tests, "
-          f"{len(files)} files in the treemap")
+    print(f"{stats['lines']:,} lines, {stats['tests'][1]}/{stats['tests'][0]} unit tests")
 
 
 if __name__ == "__main__":
