@@ -35,9 +35,17 @@ public final class PortAllocator {
 		reserved.remove(port);
 	}
 
-	private static boolean isFree(int port) {
-		try (ServerSocket socket = new ServerSocket(port, 1, (InetAddress) null)) {
-			socket.setReuseAddress(true);
+	/**
+	 * Free on every address and on loopback alone. macOS lets a socket bind every address while
+	 * another program holds the same port on 127.0.0.1, where singleplayer racks listen, so
+	 * checking only one would hand out a port another game's rack already uses.
+	 */
+	static boolean isFree(int port) {
+		return canBind(port, null) && canBind(port, InetAddress.getLoopbackAddress());
+	}
+
+	private static boolean canBind(int port, InetAddress address) {
+		try (ServerSocket socket = new ServerSocket(port, 1, address)) {
 			return true;
 		} catch (IOException e) {
 			return false;

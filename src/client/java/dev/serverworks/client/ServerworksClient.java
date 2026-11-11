@@ -48,8 +48,12 @@ public final class ServerworksClient implements ClientModInitializer {
 		});
 		ClientPlayNetworking.registerGlobalReceiver(GatewayTripPayload.TYPE, (payload, context) -> Trips.go(payload));
 		ClientPlayNetworking.registerGlobalReceiver(ClientPackPayload.TYPE, (payload, context) -> ClientPacks.save(payload));
-		ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> client.execute(Trips::onJoin));
+		ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> client.execute(() -> {
+			Trips.onJoin();
+			dev.serverworks.client.trip.ReturnKey.announceArrival(client);
+		}));
 		TripButtons.register();
+		dev.serverworks.client.trip.ReturnKey.register();
 		dev.serverworks.ClientHooks.openManual = () -> net.minecraft.client.Minecraft.getInstance().gui
 				.setScreen(new dev.serverworks.client.screen.ManualScreen());
 		dev.serverworks.client.sound.RackHum.register();

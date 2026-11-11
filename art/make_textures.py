@@ -326,7 +326,7 @@ def make_gui():
     c.rect(190, 101, 267, 101, WELL_LINE)
     gui_slot(c, 197, 106)
     gui_slot(c, 245, 106)
-    arrow(c, 218, 107, rgba("#4a5266"))
+    arrow(c, 218, 107, rgba("#8a96b4"))
     # Ghost of a blank disk in the input slot, as a hint for what goes there.
     ghost = rgba("#7a7a7a")
     c.rect(199, 108, 210, 119, ghost)

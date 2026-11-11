@@ -25,6 +25,15 @@ repositories {
 loom {
 	splitEnvironmentSourceSets()
 
+	// ./gradlew runClient -Pshowcase opens straight into the "Serverworks Showcase" world.
+	if (project.hasProperty('showcase')) {
+		runs {
+			client {
+				programArgs '--quickPlaySingleplayer', 'Serverworks Showcase'
+			}
+		}
+	}
+
 	mods {
 		"serverworks" {
 			sourceSet sourceSets.main

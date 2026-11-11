@@ -35,6 +35,7 @@ public final class Serverworks implements ModInitializer {
 		ModMenus.init();
 		ServerworksNetworking.init();
 		dev.serverworks.machine.WrenchPreviews.register();
+		dev.serverworks.showcase.Showcase.register();
 		// A dedicated server takes its rack servers down with it. In singleplayer they are left
 		// running, because a player who walks through a Gateway leaves the world for the child.
 		ServerLifecycleEvents.SERVER_STOPPING.register(server -> {

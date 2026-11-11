@@ -48,6 +48,9 @@ public final class ServerInstance {
 	private String readyMarker = InstallPlan.VANILLA_READY;
 	private boolean hibernated;
 
+	/** The running server's folder, once it has been launched. */
+	private Path directory;
+
 	public ServerInstance(UUID rackId, Executor executor) {
 		this.rackId = rackId;
 		this.executor = executor;
@@ -211,6 +214,7 @@ public final class ServerInstance {
 			process = started;
 			stdin = started.getOutputStream();
 			readyMarker = prepared.readyMarker();
+			directory = prepared.directory();
 			if (cancelRequested) {
 				requestStopLocked();
 			} else {
@@ -326,6 +330,24 @@ public final class ServerInstance {
 			playersMax = max;
 			version.incrementAndGet();
 		}
+	}
+
+	/**
+	 * Lets a player in: writes them onto the whitelist with the id this server will give them,
+	 * then tells the server to reload it. Returns false when the server is not running.
+	 */
+	public synchronized boolean admit(String name, UUID accountId) {
+		if (state != State.RUNNING || directory == null) {
+			return false;
+		}
+		try {
+			Whitelist.admit(directory, name, accountId);
+		} catch (java.io.IOException e) {
+			console.add("Could not update whitelist.json: " + e.getMessage());
+			version.incrementAndGet();
+			return false;
+		}
+		return command("whitelist reload");
 	}
 
 	/** Sends a console command. Returns false when the server is not running. */

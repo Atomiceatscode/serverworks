@@ -76,6 +76,8 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 	private static final int TEXT_DIM = 0xFF8F9BB3;
 	private static final int TEXT_ERROR = 0xFFFF7A6B;
 	private static final int TEXT_OK = 0xFF63E08A;
+	private static final int DROP_IDLE = 0xFF5A6684;
+	private static final int DROP_LIT = 0xFF6FC3FF;
 	private static final int ROW_HOVER = 0xFF2E3648;
 	private static final int ROW_SELECTED = 0xFF3A4A6B;
 	private static final int ROW_SELECTED_EDGE = 0xFF6FA8FF;
@@ -102,6 +104,12 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 
 	private double scroll;
 	private boolean draggingScrollbar;
+
+	/** The row under the mouse when the button went down; a click picks it, a drag carries it. */
+	private @Nullable ProjectSummary pressed;
+	private double pressX;
+	private double pressY;
+	private boolean draggingProject;
 
 	private @Nullable ProjectSummary selected;
 	private SelectState selectState = SelectState.NONE;
@@ -162,6 +170,16 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 	/** How many catalog results are currently listed. */
 	public int resultCount() {
 		return results.size();
+	}
+
+	/** Title of the picked project, or an empty string; for tests. */
+	public String selectedTitle() {
+		return selected == null ? "" : selected.title();
+	}
+
+	/** Title of a result row, or an empty string; for tests. */
+	public String resultTitle(int row) {
+		return row >= 0 && row < results.size() ? results.get(row).title() : "";
 	}
 
 	public boolean isSearching() {
@@ -328,6 +346,24 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 		graphics.fill(trackX + 1, thumbY, trackX + SCROLLBAR_W - 1, thumbY + thumbH, hot ? SCROLL_THUMB_HOT : SCROLL_THUMB);
 	}
 
+	@Override
+	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+		super.extractRenderState(graphics, mouseX, mouseY, partialTick);
+		if (!draggingProject || pressed == null) {
+			return;
+		}
+		graphics.nextStratum();
+		boolean over = overDetail(mouseX, mouseY);
+		graphics.outline(leftPos + DETAIL_X - 2, topPos + LIST_Y - 2, DETAIL_W + 4, LIST_H + 4, over ? DROP_LIT : DROP_IDLE);
+		String name = clip(pressed.title(), 110);
+		int x = mouseX - 9;
+		int y = mouseY - 9;
+		graphics.fill(x - 1, y - 1, x + 22 + font.width(name) + 4, y + 19, 0xE0141820);
+		graphics.outline(x - 1, y - 1, 24 + font.width(name) + 4, 20, over ? DROP_LIT : DROP_IDLE);
+		extractIcon(graphics, pressed.iconUrl(), x + 1, y + 1, 16);
+		graphics.text(font, name, x + 21, y + 5, TEXT_LIGHT, false);
+	}
+
 	private void extractDetail(GuiGraphicsExtractor graphics) {
 		int x = leftPos + DETAIL_X;
 		int centre = x + DETAIL_W / 2;
@@ -400,7 +436,7 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 	protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
 		super.extractTooltip(graphics, mouseX, mouseY);
 		int row = rowAt(mouseX, mouseY);
-		if (row < 0 || !menu.getCarried().isEmpty()) {
+		if (row < 0 || draggingProject || !menu.getCarried().isEmpty()) {
 			return;
 		}
 		ProjectSummary project = results.get(row);
@@ -470,6 +506,20 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 		return row >= 0 && row < results.size() ? row : -1;
 	}
 
+	/** The right-hand panel a dragged project can be dropped on. */
+	private boolean overDetail(double mouseX, double mouseY) {
+		int x = leftPos + DETAIL_X;
+		int y = topPos + LIST_Y;
+		return mouseX >= x - 2 && mouseX < x + DETAIL_W + 2 && mouseY >= y - 2 && mouseY < y + LIST_H + 2;
+	}
+
+	private void pick(ProjectSummary project) {
+		if (selected == null || !selected.id().equals(project.id()) || selectState == SelectState.FAILED) {
+			select(project);
+			minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+		}
+	}
+
 	private boolean overScrollbar(double mouseX, double mouseY) {
 		int x = leftPos + SCROLLBAR_X;
 		int y = topPos + LIST_Y;
@@ -488,7 +538,9 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 
 	@Override
 	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-		if (event.button() == 0) {
+		// Either button picks: a Mac trackpad often reports taps as right-clicks (two-finger tap or
+		// Control-click), and the list has no other use for the right button.
+		if (event.button() == 0 || event.button() == 1) {
 			if (maxScroll() > 0 && overScrollbar(event.x(), event.y())) {
 				draggingScrollbar = true;
 				scrollToMouse(event.y());
@@ -496,11 +548,13 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 			}
 			int row = rowAt(event.x(), event.y());
 			if (row >= 0) {
-				ProjectSummary project = results.get(row);
-				if (selected == null || !selected.id().equals(project.id()) || selectState == SelectState.FAILED) {
-					select(project);
-					minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
-				}
+				// Pick straight away, so a click works even when a trackpad nudges the cursor;
+				// holding and moving carries the project over to the panel as well.
+				pressed = results.get(row);
+				pressX = event.x();
+				pressY = event.y();
+				draggingProject = false;
+				pick(pressed);
 				if (search != null) {
 					search.setFocused(false);
 				}
@@ -516,12 +570,26 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 			scrollToMouse(event.y());
 			return true;
 		}
+		if (pressed != null) {
+			if (!draggingProject && Math.hypot(event.x() - pressX, event.y() - pressY) > 6) {
+				draggingProject = true;
+			}
+			return true;
+		}
 		return super.mouseDragged(event, dx, dy);
 	}
 
 	@Override
 	public boolean mouseReleased(MouseButtonEvent event) {
 		draggingScrollbar = false;
+		if (pressed != null) {
+			if (draggingProject && overDetail(event.x(), event.y())) {
+				pick(pressed);
+			}
+			pressed = null;
+			draggingProject = false;
+			return true;
+		}
 		return super.mouseReleased(event);
 	}
 

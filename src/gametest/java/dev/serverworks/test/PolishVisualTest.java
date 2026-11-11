@@ -108,6 +108,24 @@ public final class PolishVisualTest implements FabricClientGameTest {
 			context.runOnClient(client -> ((ManualScreen) client.gui.screen()).showPage(6));
 			context.waitTicks(5);
 			context.takeScreenshot("polish_5_manual_joining");
+			context.runOnClient(client -> {
+				ManualScreen manual = (ManualScreen) client.gui.screen();
+				manual.showPage(manual.firstRecipePage());
+			});
+			context.waitTicks(5);
+			context.takeScreenshot("polish_5b_manual_recipes");
+			context.runOnClient(client -> {
+				ManualScreen manual = (ManualScreen) client.gui.screen();
+				manual.showPage(manual.pageCount() - 2);
+			});
+			context.waitTicks(5);
+			context.takeScreenshot("polish_5c_manual_recipes_last");
+			context.runOnClient(client -> {
+				ManualScreen manual = (ManualScreen) client.gui.screen();
+				manual.showPage(manual.pageCount() - 1);
+			});
+			context.waitTicks(5);
+			context.takeScreenshot("polish_5d_manual_modules");
 
 			context.setScreen(() -> new ConfigScreen(null));
 			context.waitTicks(5);

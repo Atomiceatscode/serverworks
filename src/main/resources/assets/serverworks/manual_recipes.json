@@ -1,0 +1,369 @@
+{
+  "recipes": [
+    {
+      "result": "serverworks:blank_disk",
+      "count": 4,
+      "shape": "shaped",
+      "items": [
+        "minecraft:iron_nugget",
+        "minecraft:paper",
+        "minecraft:iron_nugget",
+        "minecraft:paper",
+        "minecraft:redstone",
+        "minecraft:paper",
+        "minecraft:iron_nugget",
+        "minecraft:iron_ingot",
+        "minecraft:iron_nugget"
+      ]
+    },
+    {
+      "result": "serverworks:disk_writer",
+      "count": 1,
+      "shape": "shaped",
+      "items": [
+        "minecraft:iron_ingot",
+        "minecraft:glass_pane",
+        "minecraft:iron_ingot",
+        "minecraft:redstone",
+        "serverworks:blank_disk",
+        "minecraft:redstone",
+        "minecraft:iron_ingot",
+        "minecraft:copper_ingot",
+        "minecraft:iron_ingot"
+      ]
+    },
+    {
+      "result": "serverworks:operators_manual",
+      "count": 1,
+      "shape": "shapeless",
+      "items": [
+        "minecraft:book",
+        "serverworks:blank_disk"
+      ]
+    },
+    {
+      "result": "serverworks:wrench",
+      "count": 1,
+      "shape": "shaped",
+      "items": [
+        "minecraft:iron_ingot",
+        null,
+        "minecraft:iron_ingot",
+        null,
+        "minecraft:iron_ingot",
+        null,
+        null,
+        "minecraft:copper_ingot",
+        null
+      ]
+    },
+    {
+      "result": "serverworks:iron_rack_casing",
+      "count": 8,
+      "shape": "shaped",
+      "items": [
+        "minecraft:iron_ingot",
+        "minecraft:iron_ingot",
+        "minecraft:iron_ingot",
+        "minecraft:iron_ingot",
+        "minecraft:redstone",
+        "minecraft:iron_ingot",
+        "minecraft:iron_ingot",
+        "minecraft:iron_ingot",
+        "minecraft:iron_ingot"
+      ]
+    },
+    {
+      "result": "serverworks:diamond_rack_casing",
+      "count": 6,
+      "shape": "shaped",
+      "items": [
+        "serverworks:iron_rack_casing",
+        "minecraft:diamond",
+        "serverworks:iron_rack_casing",
+        "serverworks:iron_rack_casing",
+        null,
+        "serverworks:iron_rack_casing",
+        "serverworks:iron_rack_casing",
+        "minecraft:diamond",
+        "serverworks:iron_rack_casing"
+      ]
+    },
+    {
+      "result": "serverworks:netherite_rack_casing",
+      "count": 8,
+      "shape": "shaped",
+      "items": [
+        "serverworks:diamond_rack_casing",
+        "serverworks:diamond_rack_casing",
+        "serverworks:diamond_rack_casing",
+        "serverworks:diamond_rack_casing",
+        "minecraft:netherite_ingot",
+        "serverworks:diamond_rack_casing",
+        "serverworks:diamond_rack_casing",
+        "serverworks:diamond_rack_casing",
+        "serverworks:diamond_rack_casing"
+      ]
+    },
+    {
+      "result": "serverworks:server_core",
+      "count": 1,
+      "shape": "shaped",
+      "items": [
+        "serverworks:iron_rack_casing",
+        "minecraft:observer",
+        "serverworks:iron_rack_casing",
+        "minecraft:repeater",
+        "minecraft:diamond",
+        "minecraft:repeater",
+        "serverworks:iron_rack_casing",
+        "minecraft:comparator",
+        "serverworks:iron_rack_casing"
+      ]
+    },
+    {
+      "result": "serverworks:drive_bay",
+      "count": 1,
+      "shape": "shaped",
+      "items": [
+        "minecraft:iron_ingot",
+        "serverworks:blank_disk",
+        "minecraft:iron_ingot",
+        "serverworks:blank_disk",
+        "serverworks:iron_rack_casing",
+        "serverworks:blank_disk",
+        "minecraft:iron_ingot",
+        "minecraft:redstone",
+        "minecraft:iron_ingot"
+      ]
+    },
+    {
+      "result": "serverworks:memory_bank",
+      "count": 1,
+      "shape": "shaped",
+      "items": [
+        "minecraft:gold_ingot",
+        "minecraft:quartz",
+        "minecraft:gold_ingot",
+        "minecraft:quartz",
+        "serverworks:iron_rack_casing",
+        "minecraft:quartz",
+        "minecraft:gold_ingot",
+        "minecraft:redstone",
+        "minecraft:gold_ingot"
+      ]
+    },
+    {
+      "result": "serverworks:vent",
+      "count": 1,
+      "shape": "shaped",
+      "items": [
+        null,
+        "minecraft:iron_bars",
+        null,
+        "minecraft:iron_bars",
+        "serverworks:iron_rack_casing",
+        "minecraft:iron_bars",
+        null,
+        "minecraft:iron_bars",
+        null
+      ]
+    },
+    {
+      "result": "serverworks:gateway",
+      "count": 1,
+      "shape": "shaped",
+      "items": [
+        "minecraft:obsidian",
+        "minecraft:ender_pearl",
+        "minecraft:obsidian",
+        "minecraft:ender_pearl",
+        "serverworks:iron_rack_casing",
+        "minecraft:ender_pearl",
+        "minecraft:obsidian",
+        "minecraft:ender_pearl",
+        "minecraft:obsidian"
+      ]
+    },
+    {
+      "result": "serverworks:status_display",
+      "count": 1,
+      "shape": "shaped",
+      "items": [
+        "minecraft:glass_pane",
+        "minecraft:glass_pane",
+        "minecraft:glass_pane",
+        "minecraft:glass_pane",
+        "serverworks:iron_rack_casing",
+        "minecraft:glass_pane",
+        "minecraft:glowstone_dust",
+        "minecraft:redstone",
+        "minecraft:glowstone_dust"
+      ]
+    },
+    {
+      "result": "serverworks:link_card",
+      "count": 1,
+      "shape": "shapeless",
+      "items": [
+        "serverworks:blank_disk",
+        "minecraft:ender_pearl",
+        "minecraft:copper_ingot"
+      ]
+    },
+    {
+      "result": "serverworks:vanilla_platform_module",
+      "count": 1,
+      "shape": "shapeless",
+      "items": [
+        "serverworks:iron_rack_casing",
+        "serverworks:blank_disk",
+        "minecraft:redstone",
+        "minecraft:grass_block"
+      ]
+    },
+    {
+      "result": "serverworks:fabric_platform_module",
+      "count": 1,
+      "shape": "shapeless",
+      "items": [
+        "serverworks:iron_rack_casing",
+        "serverworks:blank_disk",
+        "minecraft:redstone",
+        "minecraft:white_wool"
+      ]
+    },
+    {
+      "result": "serverworks:quilt_platform_module",
+      "count": 1,
+      "shape": "shapeless",
+      "items": [
+        "serverworks:iron_rack_casing",
+        "serverworks:blank_disk",
+        "minecraft:redstone",
+        "minecraft:loom"
+      ]
+    },
+    {
+      "result": "serverworks:neoforge_platform_module",
+      "count": 1,
+      "shape": "shapeless",
+      "items": [
+        "serverworks:iron_rack_casing",
+        "serverworks:blank_disk",
+        "minecraft:redstone",
+        "minecraft:blaze_powder"
+      ]
+    },
+    {
+      "result": "serverworks:forge_platform_module",
+      "count": 1,
+      "shape": "shapeless",
+      "items": [
+        "serverworks:iron_rack_casing",
+        "serverworks:blank_disk",
+        "minecraft:redstone",
+        "minecraft:anvil"
+      ]
+    },
+    {
+      "result": "serverworks:paper_platform_module",
+      "count": 1,
+      "shape": "shapeless",
+      "items": [
+        "serverworks:iron_rack_casing",
+        "serverworks:blank_disk",
+        "minecraft:redstone",
+        "minecraft:paper"
+      ]
+    },
+    {
+      "result": "serverworks:purpur_platform_module",
+      "count": 1,
+      "shape": "shapeless",
+      "items": [
+        "serverworks:iron_rack_casing",
+        "serverworks:blank_disk",
+        "minecraft:redstone",
+        "minecraft:purpur_block"
+      ]
+    },
+    {
+      "result": "serverworks:folia_platform_module",
+      "count": 1,
+      "shape": "shapeless",
+      "items": [
+        "serverworks:iron_rack_casing",
+        "serverworks:blank_disk",
+        "minecraft:redstone",
+        "minecraft:oak_leaves"
+      ]
+    },
+    {
+      "result": "serverworks:spigot_platform_module",
+      "count": 1,
+      "shape": "shapeless",
+      "items": [
+        "serverworks:iron_rack_casing",
+        "serverworks:blank_disk",
+        "minecraft:redstone",
+        "minecraft:tripwire_hook"
+      ]
+    },
+    {
+      "result": "serverworks:bukkit_platform_module",
+      "count": 1,
+      "shape": "shapeless",
+      "items": [
+        "serverworks:iron_rack_casing",
+        "serverworks:blank_disk",
+        "minecraft:redstone",
+        "minecraft:bucket"
+      ]
+    },
+    {
+      "result": "serverworks:sponge_platform_module",
+      "count": 1,
+      "shape": "shapeless",
+      "items": [
+        "serverworks:iron_rack_casing",
+        "serverworks:blank_disk",
+        "minecraft:redstone",
+        "minecraft:honeycomb"
+      ]
+    },
+    {
+      "result": "serverworks:velocity_platform_module",
+      "count": 1,
+      "shape": "shapeless",
+      "items": [
+        "serverworks:iron_rack_casing",
+        "serverworks:blank_disk",
+        "minecraft:redstone",
+        "minecraft:sugar"
+      ]
+    },
+    {
+      "result": "serverworks:bungeecord_platform_module",
+      "count": 1,
+      "shape": "shapeless",
+      "items": [
+        "serverworks:iron_rack_casing",
+        "serverworks:blank_disk",
+        "minecraft:redstone",
+        "minecraft:lead"
+      ]
+    },
+    {
+      "result": "serverworks:waterfall_platform_module",
+      "count": 1,
+      "shape": "shapeless",
+      "items": [
+        "serverworks:iron_rack_casing",
+        "serverworks:blank_disk",
+        "minecraft:redstone",
+        "minecraft:water_bucket"
+      ]
+    }
+  ]
+}

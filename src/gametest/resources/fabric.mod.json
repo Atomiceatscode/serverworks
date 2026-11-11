@@ -11,7 +11,9 @@
 			"dev.serverworks.test.RackServerVisualTest",
 			"dev.serverworks.test.ProxyVisualTest",
 			"dev.serverworks.test.PolishVisualTest",
-			"dev.serverworks.test.DedicatedVisualTest"
+			"dev.serverworks.test.DedicatedVisualTest",
+			"dev.serverworks.test.ShowcaseSwitchTest",
+			"dev.serverworks.test.ShowcaseWorldTest"
 		]
 	},
 	"depends": {

@@ -23,13 +23,16 @@ with or endorsed by Modrinth.
   of each disk's project that suits it, checks every file's hash, and runs the server on
   your computer. The Server Core shows progress, the address and a live console.
 - **Walk in.** Use the Gateway and the game saves your world and joins the rack's server.
-  "Return to …" in the pause menu takes you back. Status Displays show who is on.
+  Press B (or "Return to …" in the pause menu) to go back. Status Displays show who is on.
 - **Every major platform.** Vanilla, Paper, Purpur, Folia, Spigot, CraftBukkit, Sponge,
   Fabric, Quilt, NeoForge and Forge servers; Velocity and BungeeCord proxies in front of
   other racks, linked with Link Cards.
 - **Feels like a machine.** Fans spin, lights blink, the rack hums, chimes when it comes
   up and sounds an alarm if it crashes. The Operator's Manual explains everything, and an
-  advancement tab runs from your first disk to a netherite rack.
+  advancement tab runs from your first disk to a netherite rack. The manual's Recipes pages
+  draw every crafting grid.
+- **A guided tour.** Turn on "Serverworks Showcase" on the Create World screen for a creative
+  world with every block laid out and four example racks ready to start.
 
 ## Requirements
 
@@ -45,13 +48,14 @@ with or endorsed by Modrinth.
 
 1. Craft Blank Disks (iron, paper, redstone) and a Disk Writer. The Operator's Manual is a
    book plus a Blank Disk.
-2. Write some disks in the Disk Writer: search, pick a project, take the disk.
+2. Write some disks in the Disk Writer: search, click a project (or drag it onto the
+   right-hand panel), take the disk.
 3. Build a 3 x 3 x 3 box of Iron Rack Casing. Swap face centres for a Server Core, a
    Platform Module, a Drive Bay, a Memory Bank and a Vent; leave the middle empty. The
    sixth face centre takes a Gateway. For more room, make the rack longer.
 4. Put your disks in the Drive Bay, open the Server Core and press Start. Agree to the
    Minecraft EULA the first time.
-5. When it says Running, use the Gateway.
+5. When it says Running, use the Gateway. Press B to come back.
 
 ## Platforms
 

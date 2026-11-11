@@ -65,7 +65,7 @@ public final class RackGateway {
 		// New servers only admit whitelisted players. Whoever the Gateway sends is let in.
 		String playerName = player.getGameProfile().name();
 		boolean admitted = proxy || (playerName.matches("[A-Za-z0-9_]{1,16}") && instance != null
-				&& instance.command("whitelist add " + playerName));
+				&& instance.admit(playerName, player.getUUID()));
 		if (!admitted) {
 			message(player, Component.translatable("serverworks.gateway.closed").withStyle(ChatFormatting.GRAY));
 			return;

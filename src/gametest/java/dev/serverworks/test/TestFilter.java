@@ -19,6 +19,6 @@ final class TestFilter {
 		return only != null && !only.isBlank() && !named;
 	}
 
-	/** Tests that only run when named. None at present. */
-	private static final List<String> OPT_IN = List.of();
+	/** Run only when named: ShowcaseWorldTest makes a world to play in rather than testing anything. */
+	private static final List<String> OPT_IN = List.of("ShowcaseWorldTest");
 }

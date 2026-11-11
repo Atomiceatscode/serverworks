@@ -68,7 +68,19 @@ def unlock(recipe, item, criterion):
         "rewards": {"recipes": [f"{MOD}:{recipe}"]}})
 
 
+MANUAL_RECIPES = []
+
+# Tags have no single picture; the manual shows a typical member.
+TAG_EXAMPLES = {"#minecraft:leaves": "minecraft:oak_leaves"}
+
+
 def shaped(name, pattern, key, count=1, unlock_item="minecraft:iron_ingot"):
+    grid = []
+    for row in pattern + [""] * (3 - len(pattern)):
+        for ch in row.ljust(3):
+            item = key.get(ch) if ch != " " else None
+            grid.append(TAG_EXAMPLES.get(item, item) if item else None)
+    MANUAL_RECIPES.append({"result": f"{MOD}:{name}", "count": count, "shape": "shaped", "items": grid})
     result = {"id": f"{MOD}:{name}"}
     if count > 1:
         result["count"] = count
@@ -78,6 +90,8 @@ def shaped(name, pattern, key, count=1, unlock_item="minecraft:iron_ingot"):
 
 
 def shapeless(name, ingredients, unlock_item):
+    MANUAL_RECIPES.append({"result": f"{MOD}:{name}", "count": 1, "shape": "shapeless",
+                           "items": [TAG_EXAMPLES.get(i, i) for i in ingredients]})
     write(DATA / f"{MOD}/recipe/{name}.json", {
         "type": "minecraft:crafting_shapeless", "category": "misc", "ingredients": ingredients,
         "result": {"id": f"{MOD}:{name}"}})
@@ -471,6 +485,7 @@ def language():
         "serverworks.display.offline": "Offline",
         "serverworks.display.address": "%s:%s",
         "serverworks.jade.not_formed": "Not part of a formed rack",
+        "serverworks.showcase.built": "Built the Serverworks showcase. Walk south to explore it; disks arrive in a few seconds.",
         "config.jade.plugin_serverworks.rack": "Serverworks racks",
         "serverworks.jade.platform": "%s rack",
         "serverworks.jade.disks": "Disks: %s/%s",
@@ -601,7 +616,8 @@ MANUAL = {
                 "Every rack runs a real server on this computer, downloaded from the official sources and from "
                 "Modrinth, the catalog all the disks come from."),
     "disks": ("Disks and the Disk Writer",
-              "Craft Blank Disks, then put one in a Disk Writer. Search the catalog, pick a project, and take the "
+              "Craft Blank Disks, then put one in a Disk Writer. Search the catalog, click a project or drag it onto "
+              "the right-hand panel, and take the "
               "written disk from the output slot. It carries the project's name and icon.\n"
               "Write a modpack and you get a Pack Cartridge instead. Disks only name a project: the newest version "
               "that suits your rack is chosen when the server starts."),
@@ -629,7 +645,7 @@ MANUAL = {
                  "takes commands. In singleplayer only you can start racks; on a server, only operators can."),
     "joining": ("Joining Your Server",
                 "Use the Gateway while the server runs: your world is saved and you arrive on the rack's server. "
-                "Press Escape there and choose Return to go back.\n"
+                "Press B there (change it in Controls), or press Escape and choose Return, to go back.\n"
                 "If a disk needs to be installed by players too, the Gateway stays amber and names it. Save the "
                 "Client Pack from the Server Core and import it into the Modrinth App or Prism Launcher."),
     "proxies": ("Proxies and Link Cards",
@@ -660,6 +676,18 @@ def manual_text():
     lang["serverworks.manual.subheading"] = "Everything about building and running racks"
     lang["serverworks.manual.contents"] = "Contents"
     lang["serverworks.manual.page"] = "%s / %s"
+    lang["serverworks.manual.recipes.short"] = "Recipes"
+    lang["serverworks.manual.recipes.title"] = "Recipes"
+    lang["serverworks.manual.recipes.modules"] = "Platform Modules"
+    lang["serverworks.manual.recipes.modules.body"] = "its platform's item:"
+    lang["serverworks.manual.recipes.shapeless"] = "Any order"
+    lang["serverworks.trip.arrived"] = "You are on the rack's server. To go back to %s, press %s, or press Esc and choose Return."
+    lang["key.serverworks.return"] = "Return from Rack Server"
+    lang["key.category.serverworks.serverworks"] = "Serverworks"
+    lang["serverworks.showcase.welcome"] = "Welcome to the Serverworks Showcase. Walk south and follow the numbered signs; the chests at the starter station hold supplies. Disks arrive in a few seconds."
+    lang["serverworks.create_world.showcase"] = "Serverworks Showcase"
+    lang["serverworks.create_world.showcase.info"] = "Builds a tour of every Serverworks block, with example racks ready to start. Turns on Creative, Superflat and commands. The tour is built when you first join."
+    lang["serverworks.manual.recipes.disks"] = "Mod Disks and Pack Cartridges are not crafted: write them in the Disk Writer from a Blank Disk."
     shorts = {"welcome": "Welcome", "disks": "Disks", "building": "Building", "parts": "Components",
               "platforms": "Platforms", "starting": "Starting", "joining": "Joining", "proxies": "Proxies",
               "modpacks": "Pack Cartridges", "limits": "Sleep and Limits", "trouble": "Troubleshooting"}
@@ -667,6 +695,18 @@ def manual_text():
         lang[f"serverworks.manual.{key}.title"] = title
         lang[f"serverworks.manual.{key}.short"] = shorts[key]
         lang[f"serverworks.manual.{key}.body"] = body
+
+
+def manual_recipes():
+    """Every recipe, for the Operator's Manual's recipe pages."""
+    order = ["blank_disk", "disk_writer", "operators_manual", "wrench", "iron_rack_casing", "diamond_rack_casing",
+             "netherite_rack_casing", "server_core", "drive_bay", "memory_bank", "vent", "gateway",
+             "status_display", "link_card"]
+
+    def rank(recipe):
+        name = recipe["result"].split(":")[1]
+        return order.index(name) if name in order else len(order)
+    write(ASSETS / "manual_recipes.json", {"recipes": sorted(MANUAL_RECIPES, key=rank)})
 
 
 def tags():
@@ -679,6 +719,7 @@ def tags():
 def clean():
     """Removes everything this script owns, so renamed or deleted blocks leave nothing behind."""
     for folder in (ASSETS / "blockstates", ASSETS / "models", ASSETS / "items", ASSETS / "lang", ASSETS / "sounds.json",
+                   ASSETS / "manual_recipes.json",
                    DATA / MOD, DATA / "minecraft/tags"):
         if folder.is_file():
             folder.unlink()
@@ -695,6 +736,7 @@ if __name__ == "__main__":
     rack_components()
     sounds()
     advancements()
+    manual_recipes()
     manual_text()
     language()
     tags()

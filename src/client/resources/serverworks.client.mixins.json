@@ -2,7 +2,11 @@
 	"required": true,
 	"package": "dev.serverworks.client.mixin",
 	"compatibilityLevel": "JAVA_25",
-	"client": [],
+	"client": [
+		"CreateWorldGameTabMixin",
+		"CreateWorldScreenMixin",
+		"GridLayoutTabAccessor"
+	],
 	"injectors": {
 		"defaultRequire": 1
 	},

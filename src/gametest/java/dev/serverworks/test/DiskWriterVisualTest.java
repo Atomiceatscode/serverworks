@@ -11,8 +11,6 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.TestServerConnection;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
-import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.ContainerInput;
@@ -75,20 +73,20 @@ public final class DiskWriterVisualTest implements FabricClientGameTest {
 			context.takeScreenshot("4_ready_to_write");
 			takeResult(context);
 
-			clickRow(context, 1);
+			clickRow(context, 1, 1);
 			waitForWrittenDisk(context);
 			takeResult(context);
-			clickRow(context, 2);
+			dragRowToPanel(context, 2);
 			waitForWrittenDisk(context);
 			takeResult(context);
 			context.waitTicks(10);
-			context.takeScreenshot("5_disks_written");
+			context.takeScreenshot("6_disks_written");
 
 			context.runOnClient(client -> client.player.closeContainer());
 			context.waitTicks(5);
 			context.setScreen(() -> new InventoryScreen(Minecraft.getInstance().player));
 			context.waitTicks(20);
-			context.takeScreenshot("6_inventory");
+			context.takeScreenshot("7_inventory");
 			context.setScreen(() -> null);
 
 			int diskSlot = context.computeOnClient(client -> {
@@ -104,7 +102,7 @@ public final class DiskWriterVisualTest implements FabricClientGameTest {
 			}
 			context.runOnClient(client -> client.player.getInventory().setSelectedSlot(diskSlot));
 			context.waitTicks(20);
-			context.takeScreenshot("7_disk_in_hand");
+			context.takeScreenshot("8_disk_in_hand");
 		}
 	}
 
@@ -148,13 +146,66 @@ public final class DiskWriterVisualTest implements FabricClientGameTest {
 		context.waitTicks(5);
 	}
 
-	private static void clickRow(ClientGameTestContext context, int row) {
-		context.runOnClient(client -> {
+	/** Window position (what the real mouse reports) of a point in GUI coordinates. */
+	private static double[] toWindow(ClientGameTestContext context, double guiX, double guiY) {
+		return context.computeOnClient(client -> new double[] {
+				guiX * client.getWindow().getScreenWidth() / client.getWindow().getGuiScaledWidth(),
+				guiY * client.getWindow().getScreenHeight() / client.getWindow().getGuiScaledHeight()});
+	}
+
+	private static double[] rowCentre(ClientGameTestContext context, int row) {
+		return context.computeOnClient(client -> {
 			DiskWriterScreen screen = (DiskWriterScreen) client.gui.screen();
-			double x = (screen.width - 276) / 2.0 + LIST_X + 40;
-			double y = (screen.height - 222) / 2.0 + LIST_Y + row * ROW_H + 10;
-			screen.mouseClicked(new MouseButtonEvent(x, y, new MouseButtonInfo(0, 0)), false);
+			return new double[] {(screen.width - 276) / 2.0 + LIST_X + 40, (screen.height - 222) / 2.0 + LIST_Y + row * ROW_H + 10};
 		});
-		context.waitTicks(2);
+	}
+
+	private static String selectedTitle(ClientGameTestContext context) {
+		return context.computeOnClient(client -> ((DiskWriterScreen) client.gui.screen()).selectedTitle());
+	}
+
+	/** Clicks a row with the real mouse, the way a player (or a trackpad tap) does. */
+	private static void clickRow(ClientGameTestContext context, int row) {
+		clickRow(context, row, 0);
+	}
+
+	/** Button 1 is what a Mac trackpad sends for a two-finger tap or a Control-click. */
+	private static void clickRow(ClientGameTestContext context, int row, int button) {
+		double[] gui = rowCentre(context, row);
+		String expected = context.computeOnClient(client -> ((DiskWriterScreen) client.gui.screen()).resultTitle(row));
+		double[] at = toWindow(context, gui[0], gui[1]);
+		context.getInput().setCursorPos(at[0], at[1]);
+		context.waitTicks(1);
+		context.getInput().pressMouse(button);
+		context.waitTicks(3);
+		if (!expected.equals(selectedTitle(context))) {
+			throw new AssertionError("Clicking row " + row + " should pick " + expected + ", picked " + selectedTitle(context));
+		}
+	}
+
+	/** Drags a row onto the right-hand panel with the real mouse. */
+	private static void dragRowToPanel(ClientGameTestContext context, int row) {
+		double[] from = rowCentre(context, row);
+		String expected = context.computeOnClient(client -> ((DiskWriterScreen) client.gui.screen()).resultTitle(row));
+		double[] to = context.computeOnClient(client -> {
+			DiskWriterScreen screen = (DiskWriterScreen) client.gui.screen();
+			return new double[] {(screen.width - 276) / 2.0 + 229, (screen.height - 222) / 2.0 + 70};
+		});
+		double[] start = toWindow(context, from[0], from[1]);
+		double[] end = toWindow(context, to[0], to[1]);
+		context.getInput().setCursorPos(start[0], start[1]);
+		context.waitTicks(1);
+		context.getInput().holdMouse(0);
+		context.waitTicks(1);
+		for (int step = 1; step <= 10; step++) {
+			context.getInput().setCursorPos(start[0] + (end[0] - start[0]) * step / 10, start[1] + (end[1] - start[1]) * step / 10);
+			context.waitTicks(1);
+		}
+		context.takeScreenshot("5_dragging_to_panel");
+		context.getInput().releaseMouse(0);
+		context.waitTicks(3);
+		if (!expected.equals(selectedTitle(context))) {
+			throw new AssertionError("Dropping row " + row + " on the panel should pick " + expected + ", picked " + selectedTitle(context));
+		}
 	}
 }

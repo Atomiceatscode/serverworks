@@ -58,6 +58,12 @@ class HostPartsTest {
 		try (ServerSocket busy = new ServerSocket(first)) {
 			assertNotEquals(first, ports.acquire(), "a port something else is listening on must be skipped");
 		}
+		// A rack server from another game listens on loopback only, which is what clashed on macOS.
+		int third = ports.acquire();
+		ports.release(third);
+		try (ServerSocket loopbackOnly = new ServerSocket(third, 1, java.net.InetAddress.getLoopbackAddress())) {
+			assertFalse(PortAllocator.isFree(third), "a port held on 127.0.0.1 alone must count as busy");
+		}
 		PortAllocator tiny = new PortAllocator(25690, 25690);
 		assertEquals(25690, tiny.acquire());
 		assertEquals(-1, tiny.acquire());

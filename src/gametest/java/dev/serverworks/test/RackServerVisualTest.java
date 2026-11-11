@@ -44,6 +44,13 @@ import java.util.List;
 public final class RackServerVisualTest implements FabricClientGameTest {
 	private static final int TICKS_PER_MINUTE = 20 * 60;
 
+	/**
+	 * Paper by default. SERVERWORKS_TRIP_PLATFORM=fabric runs the trip on a vanilla-style server,
+	 * whose whitelist behaves differently in offline mode.
+	 */
+	private static final Platform PLATFORM = java.util.Optional.ofNullable(System.getenv("SERVERWORKS_TRIP_PLATFORM"))
+			.map(Platform::byId).orElse(Platform.PAPER);
+
 	@Override
 	public void runTest(ClientGameTestContext context) {
 		if (TestFilter.skip(getClass())) {
@@ -78,7 +85,7 @@ public final class RackServerVisualTest implements FabricClientGameTest {
 				level.setBlockAndUpdate(origin.offset(-2, 1, 1), facing(ModBlocks.DRIVE_BAY, Direction.WEST));
 				level.setBlockAndUpdate(origin.offset(2, 1, 1), facing(ModBlocks.MEMORY_BANK, Direction.EAST));
 				level.setBlockAndUpdate(origin.offset(0, 2, 1), facing(ModBlocks.VENT, Direction.UP));
-				level.setBlockAndUpdate(origin.offset(0, 1, 2), facing(ModBlocks.PLATFORM_MODULES.get(Platform.PAPER), Direction.SOUTH));
+				level.setBlockAndUpdate(origin.offset(0, 1, 2), facing(ModBlocks.PLATFORM_MODULES.get(PLATFORM), Direction.SOUTH));
 				DriveBayBlockEntity bay = (DriveBayBlockEntity) level.getBlockEntity(origin.offset(-2, 1, 1));
 				for (int i = 0; i < disks.size(); i++) {
 					ItemStack stack = new ItemStack(ModItems.MOD_DISK);
@@ -120,11 +127,18 @@ public final class RackServerVisualTest implements FabricClientGameTest {
 			context.takeScreenshot("server_3_running");
 
 			context.runOnClient(client -> screen(client).showConsole(true));
-			context.runOnClient(client -> ClientPlayNetworking.send(
-					new ConsoleCommandPayload(screen(client).getMenu().containerId, "plugins")));
-			context.waitFor(client -> screen(client).consoleLines().stream().anyMatch(l -> l.contains("Server Plugins (2)"))
-					&& screen(client).consoleLines().stream().anyMatch(l -> l.endsWith(" - LuckPerms"))
-					&& screen(client).consoleLines().stream().anyMatch(l -> l.endsWith(" - Chunky")), 20 * 30);
+			if (PLATFORM.group() == Platform.Group.PLUGIN) {
+				context.runOnClient(client -> ClientPlayNetworking.send(
+						new ConsoleCommandPayload(screen(client).getMenu().containerId, "plugins")));
+				context.waitFor(client -> screen(client).consoleLines().stream().anyMatch(l -> l.contains("Server Plugins (2)"))
+						&& screen(client).consoleLines().stream().anyMatch(l -> l.endsWith(" - LuckPerms"))
+						&& screen(client).consoleLines().stream().anyMatch(l -> l.endsWith(" - Chunky")), 20 * 30);
+			} else {
+				// Mod servers have no plugin list; the console still has to answer.
+				context.runOnClient(client -> ClientPlayNetworking.send(
+						new ConsoleCommandPayload(screen(client).getMenu().containerId, "list")));
+				context.waitFor(client -> screen(client).consoleLines().stream().anyMatch(l -> l.contains("players online")), 20 * 30);
+			}
 			context.waitTicks(5);
 			context.takeScreenshot("server_4_console");
 
@@ -164,7 +178,10 @@ public final class RackServerVisualTest implements FabricClientGameTest {
 			}
 			context.takeScreenshot("trip_3_pause_menu");
 
-			context.runOnClient(client -> Trips.goBack());
+			// The return key works too.
+			context.setScreen(() -> null);
+			context.waitTicks(5);
+			context.getInput().pressKey(dev.serverworks.client.trip.ReturnKey.KEY);
 			context.waitFor(client -> client.hasSingleplayerServer() && client.level != null && client.player != null
 					&& client.gui.screen() == null, 2 * TICKS_PER_MINUTE);
 			if (context.computeOnClient(client -> Trips.origin() != null)) {
