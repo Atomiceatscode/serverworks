@@ -114,10 +114,15 @@ public final class ContentResolver {
 
 		List<ContentFile> files = new ArrayList<>();
 		for (Map.Entry<String, ProjectVersion> entry : chosen.entrySet()) {
-			files.add(file(platform, entry.getValue(), titles.get(entry.getKey()), automatic.get(entry.getKey()),
+			files.add(file(platform, entry.getKey(), entry.getValue(), titles.get(entry.getKey()), automatic.get(entry.getKey()),
 					sides.get(entry.getKey()), packs.getOrDefault(entry.getKey(), false)));
 		}
 		return files;
+	}
+
+	/** The version a rack on this platform would install for an unpinned disk of this project. */
+	public ProjectVersion newest(Platform platform, String minecraftVersion, String projectId) throws PrepareException {
+		return pick(platform, minecraftVersion, new Wanted(projectId, projectId, null));
 	}
 
 	private ProjectVersion pick(Platform platform, String minecraftVersion, Wanted wanted) throws PrepareException {
@@ -163,7 +168,7 @@ public final class ContentResolver {
 		return null;
 	}
 
-	private static ContentFile file(Platform platform, ProjectVersion version, String title, boolean automatic,
+	private static ContentFile file(Platform platform, String projectId, ProjectVersion version, String title, boolean automatic,
 			SideSupport clientSide, boolean modpack) throws PrepareException {
 		VersionFile file = version.primaryFile().orElseThrow();
 		String name = file.filename();
@@ -174,7 +179,7 @@ public final class ContentResolver {
 		}
 		if (modpack) {
 			return new ContentFile(file.url(), name, file.sha512(), file.sha1(), file.size(), PACK_DIRECTORY, title, false,
-					clientSide);
+					clientSide, projectId, version.id(), version.versionNumber());
 		}
 		String loader = preferredLoader(platform, version);
 		String directory;
@@ -184,6 +189,6 @@ public final class ContentResolver {
 			directory = platform.group() == Platform.Group.MOD ? "mods" : "plugins";
 		}
 		return new ContentFile(file.url(), name, file.sha512(), file.sha1(), file.size(), directory, title, automatic,
-				clientSide);
+				clientSide, projectId, version.id(), version.versionNumber());
 	}
 }

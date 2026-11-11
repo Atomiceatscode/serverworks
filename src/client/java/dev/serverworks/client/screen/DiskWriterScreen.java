@@ -77,6 +77,7 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 	private static final int TEXT_ERROR = 0xFFFF7A6B;
 	private static final int TEXT_OK = 0xFF63E08A;
 	private static final int DROP_IDLE = 0xFF5A6684;
+	private static final int TEXT_PIN = 0xFF6FC3FF;
 	private static final int DROP_LIT = 0xFF6FC3FF;
 	private static final int ROW_HOVER = 0xFF2E3648;
 	private static final int ROW_SELECTED = 0xFF3A4A6B;
@@ -103,6 +104,8 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 	private String lastSearchedText = "";
 
 	private double scroll;
+	private int lastMouseX;
+	private int lastMouseY;
 	private boolean draggingScrollbar;
 
 	/** The row under the mouse when the button went down; a click picks it, a drag carries it. */
@@ -112,6 +115,15 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 	private boolean draggingProject;
 
 	private @Nullable ProjectSummary selected;
+	/** The version the disk will be pinned to, or null for the newest compatible one. */
+	private @Nullable String pinnedId;
+	private @Nullable String pinnedName;
+	/** While true the list shows the selected project's versions instead of search results. */
+	private boolean versionMode;
+	private final List<dev.serverworks.catalog.model.ProjectVersion> versions = new ArrayList<>();
+	private boolean versionsLoading;
+	private @Nullable Component versionsMessage;
+	private double versionScroll;
 	private SelectState selectState = SelectState.NONE;
 	private @Nullable Component selectMessage;
 
@@ -210,6 +222,7 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 	}
 
 	private void startSearch() {
+		versionMode = false;
 		results.clear();
 		totalHits = 0;
 		scroll = 0;
@@ -273,10 +286,159 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 	// ---- selecting ----
 
 	private void select(ProjectSummary project) {
+		if (selected == null || !selected.id().equals(project.id())) {
+			pinnedId = null;
+			pinnedName = null;
+		}
 		selected = project;
 		selectState = SelectState.PENDING;
 		selectMessage = null;
-		ClientPlayNetworking.send(new SelectProjectPayload(menu.containerId, project.id()));
+		ClientPlayNetworking.send(new SelectProjectPayload(menu.containerId, project.id(), pinnedId == null ? "" : pinnedId));
+	}
+
+	// ---- versions ----
+
+	/** Shows the selected project's versions for this Minecraft version in the list. */
+	private void openVersions() {
+		if (selected == null) {
+			return;
+		}
+		versionMode = true;
+		versionScroll = 0;
+		versions.clear();
+		versionsLoading = true;
+		versionsMessage = null;
+		String projectId = selected.id();
+		String minecraft = net.minecraft.SharedConstants.getCurrentVersion().name();
+		try {
+			Serverworks.catalog().versions(projectId, List.of(), List.of(minecraft)).whenComplete((list, error) ->
+					this.minecraft.execute(() -> {
+						if (selected == null || !selected.id().equals(projectId)) {
+							return;
+						}
+						versionsLoading = false;
+						if (error != null || list == null) {
+							versionsMessage = Component.translatable(errorKey(error));
+							return;
+						}
+						versions.addAll(list);
+						if (versions.isEmpty()) {
+							versionsMessage = Component.translatable("serverworks.disk_writer.versions.none", minecraft);
+						}
+					}));
+		} catch (RuntimeException e) {
+			versionsLoading = false;
+			versionsMessage = Component.translatable(errorKey(e));
+		}
+	}
+
+	private void closeVersions() {
+		versionMode = false;
+	}
+
+	/** Row 0 is "newest"; row n is versions[n - 1]. */
+	private void pickVersion(int row) {
+		if (selected == null) {
+			return;
+		}
+		if (row == 0) {
+			pinnedId = null;
+			pinnedName = null;
+		} else {
+			var version = versions.get(row - 1);
+			pinnedId = version.id();
+			pinnedName = version.versionNumber();
+		}
+		closeVersions();
+		select(selected);
+		minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+	}
+
+	private int versionRows() {
+		return versions.size() + 1;
+	}
+
+	private int versionRowAt(double mouseX, double mouseY) {
+		int x = leftPos + LIST_X;
+		int y = topPos + LIST_Y;
+		if (mouseX < x || mouseX >= x + LIST_W || mouseY < y || mouseY >= y + LIST_H) {
+			return -1;
+		}
+		int row = (int) ((mouseY - y + versionScroll) / ROW_H);
+		return row >= 0 && row < versionRows() && !versionsLoading ? row : -1;
+	}
+
+	private void extractVersions(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+		int x = leftPos + LIST_X;
+		int y = topPos + LIST_Y;
+		graphics.enableScissor(x, y, x + LIST_W, y + LIST_H);
+		int hovered = versionRowAt(mouseX, mouseY);
+		if (!versionsLoading) {
+			for (int i = 0; i < versionRows(); i++) {
+				int rowY = y + i * ROW_H - (int) versionScroll;
+				if (rowY + ROW_H < y || rowY > y + LIST_H) {
+					continue;
+				}
+				String id = i == 0 ? null : versions.get(i - 1).id();
+				boolean current = java.util.Objects.equals(id, pinnedId);
+				if (current) {
+					graphics.fill(x, rowY, x + LIST_W, rowY + ROW_H - 1, ROW_SELECTED);
+					graphics.fill(x, rowY, x + 2, rowY + ROW_H - 1, ROW_SELECTED_EDGE);
+				} else if (i == hovered) {
+					graphics.fill(x, rowY, x + LIST_W, rowY + ROW_H - 1, ROW_HOVER);
+				}
+				int textW = LIST_W - 12;
+				if (i == 0) {
+					graphics.text(font, clip(Component.translatable("serverworks.disk_writer.versions.newest").getString(), textW),
+							x + 6, rowY + 3, TEXT_LIGHT, false);
+					graphics.text(font, clip(Component.translatable("serverworks.disk_writer.versions.newest.detail").getString(),
+							textW), x + 6, rowY + 13, TEXT_DIM, false);
+				} else {
+					var version = versions.get(i - 1);
+					graphics.text(font, clip(version.versionNumber(), textW), x + 6, rowY + 3, TEXT_LIGHT, false);
+					graphics.text(font, clip(versionDetail(version), textW), x + 6, rowY + 13, TEXT_DIM, false);
+				}
+			}
+		}
+		graphics.disableScissor();
+		Component message = versionsLoading ? Component.translatable("serverworks.disk_writer.loading") : versionsMessage;
+		if (message != null) {
+			int line = y + LIST_H / 2 + (versionsLoading ? -12 : 4);
+			for (var part : font.split(message, LIST_W - 16)) {
+				graphics.centeredText(font, part, x + LIST_W / 2, line, versionsLoading ? TEXT_DIM : TEXT_ERROR);
+				line += 10;
+			}
+		}
+	}
+
+	private static String versionDetail(dev.serverworks.catalog.model.ProjectVersion version) {
+		StringBuilder loaders = new StringBuilder();
+		for (String loader : version.loaders()) {
+			if (loaders.length() > 0) {
+				loaders.append(", ");
+			}
+			loaders.append(Character.toUpperCase(loader.charAt(0))).append(loader.substring(1));
+		}
+		String channel = Component.translatable("serverworks.disk_writer.versions."
+				+ version.channel().name().toLowerCase(Locale.ROOT)).getString();
+		String date = version.datePublished().length() >= 10 ? version.datePublished().substring(0, 10) : "";
+		return channel + " · " + date + " · " + loaders;
+	}
+
+	/** The "Newest version" / "Pinned: x" line under the title, which opens the version list. */
+	private boolean overVersionLink(double mouseX, double mouseY) {
+		if (selected == null) {
+			return false;
+		}
+		int y = topPos + LIST_Y + 38;
+		int x = leftPos + DETAIL_X;
+		return mouseX >= x + 2 && mouseX < x + DETAIL_W - 2 && mouseY >= y - 1 && mouseY < y + 9;
+	}
+
+	private Component versionLink() {
+		return pinnedName != null
+				? Component.translatable("serverworks.disk_writer.versions.pinned", pinnedName)
+				: Component.translatable("serverworks.disk_writer.versions.link");
 	}
 
 	/** Called when the server answers a selection. */
@@ -300,8 +462,14 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 		super.extractBackground(graphics, mouseX, mouseY, partialTick);
 		graphics.blit(RenderPipelines.GUI_TEXTURED, BACKGROUND, leftPos, topPos, 0, 0, imageWidth, imageHeight,
 				TEXTURE_WIDTH, TEXTURE_HEIGHT);
-		extractList(graphics, mouseX, mouseY);
-		extractScrollbar(graphics, mouseX, mouseY);
+		lastMouseX = mouseX;
+		lastMouseY = mouseY;
+		if (versionMode) {
+			extractVersions(graphics, mouseX, mouseY);
+		} else {
+			extractList(graphics, mouseX, mouseY);
+			extractScrollbar(graphics, mouseX, mouseY);
+		}
 		extractDetail(graphics);
 		loadMoreIfNeeded();
 	}
@@ -395,11 +563,18 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 				line += 10;
 			}
 		} else {
-			extractIcon(graphics, selected.iconUrl(), centre - 16, y + 3, 32);
+			extractIcon(graphics, selected.iconUrl(), centre - 12, y + 3, 24);
 			String title = clip(selected.title(), DETAIL_W - 6);
-			graphics.text(font, title, centre - font.width(title) / 2, y + 38, TEXT_LIGHT, false);
+			graphics.text(font, title, centre - font.width(title) / 2, y + 28, TEXT_LIGHT, false);
+			String link = clip(versionLink().getString() + " \u25BE", DETAIL_W - 6);
+			int linkX = centre - font.width(link) / 2;
+			boolean overLink = overVersionLink(lastMouseX, lastMouseY) || versionMode;
+			graphics.text(font, link, linkX, y + 38, overLink ? TEXT_LIGHT : (pinnedName != null ? TEXT_PIN : TEXT_DIM), false);
+			if (overLink) {
+				graphics.fill(linkX, y + 47, linkX + font.width(link), y + 48, TEXT_LIGHT);
+			}
 			Component status = statusLine();
-			int line = y + 49;
+			int line = y + 51;
 			List<net.minecraft.util.FormattedCharSequence> parts = font.split(status, DETAIL_W - 6);
 			for (int i = 0; i < Math.min(2, parts.size()); i++) {
 				graphics.centeredText(font, parts.get(i), centre, line, statusColor());
@@ -455,7 +630,11 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 	@Override
 	protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
 		super.extractTooltip(graphics, mouseX, mouseY);
-		int row = rowAt(mouseX, mouseY);
+		if (overVersionLink(mouseX, mouseY) && !versionMode) {
+			graphics.setTooltipForNextFrame(font, Component.translatable("serverworks.disk_writer.versions.tooltip"), mouseX, mouseY);
+			return;
+		}
+		int row = versionMode ? -1 : rowAt(mouseX, mouseY);
 		if (row < 0 || draggingProject || !menu.getCarried().isEmpty()) {
 			return;
 		}
@@ -592,6 +771,23 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 				scrollToMouse(event.y());
 				return true;
 			}
+			if (overVersionLink(event.x(), event.y())) {
+				if (versionMode) {
+					closeVersions();
+				} else {
+					openVersions();
+				}
+				minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+				return true;
+			}
+			if (versionMode) {
+				int versionRow = versionRowAt(event.x(), event.y());
+				if (versionRow >= 0) {
+					pickVersion(versionRow);
+					return true;
+				}
+				return super.mouseClicked(event, doubleClick);
+			}
 			int row = rowAt(event.x(), event.y());
 			if (row >= 0 && overAuthor(row, event.x(), event.y())) {
 				searchAuthor(results.get(row).author());
@@ -645,6 +841,10 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 
 	@Override
 	public boolean mouseScrolled(double x, double y, double scrollX, double scrollY) {
+		if (versionMode && versionRowAt(x, y) >= 0) {
+			versionScroll = Mth.clamp(versionScroll - scrollY * ROW_H, 0, Math.max(0, versionRows() * ROW_H - LIST_H));
+			return true;
+		}
 		if (rowAt(x, y) >= 0 || overScrollbar(x, y)) {
 			scroll = Mth.clamp(scroll - scrollY * ROW_H, 0, maxScroll());
 			return true;
@@ -654,6 +854,10 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 
 	@Override
 	public boolean keyPressed(KeyEvent event) {
+		if (event.isEscape() && versionMode) {
+			closeVersions();
+			return true;
+		}
 		if (event.isEscape()) {
 			minecraft.player.closeContainer();
 			return true;

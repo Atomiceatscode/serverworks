@@ -212,6 +212,26 @@
       ]
     },
     {
+      "result": "serverworks:config_card",
+      "count": 1,
+      "shape": "shapeless",
+      "items": [
+        "serverworks:blank_disk",
+        "minecraft:paper",
+        "minecraft:comparator"
+      ]
+    },
+    {
+      "result": "serverworks:world_drive",
+      "count": 1,
+      "shape": "shapeless",
+      "items": [
+        "serverworks:blank_disk",
+        "minecraft:map",
+        "minecraft:grass_block"
+      ]
+    },
+    {
       "result": "serverworks:vanilla_platform_module",
       "count": 1,
       "shape": "shapeless",

@@ -27,6 +27,8 @@ public final class ConfigScreen extends Screen {
 	private @Nullable EditBox firstPort;
 	private @Nullable EditBox lastPort;
 	private @Nullable EditBox publicAddress;
+	private @Nullable EditBox backupMinutes;
+	private @Nullable EditBox keepBackups;
 	private boolean operatorsOnly;
 
 	private record Row(Component label, Component hint, int y) {
@@ -47,9 +49,13 @@ public final class ConfigScreen extends Screen {
 		y += ROW;
 		maxRunning = number("max_running", config.maxRunning, fieldX, y);
 		y += ROW;
-		firstPort = number("first_port", config.firstPort, fieldX, y);
+		EditBox[] ports = pair("ports", config.firstPort, config.lastPort, fieldX, y);
+		firstPort = ports[0];
+		lastPort = ports[1];
 		y += ROW;
-		lastPort = number("last_port", config.lastPort, fieldX, y);
+		EditBox[] backups = pair("backups", config.backupMinutes, config.keepBackups, fieldX, y);
+		backupMinutes = backups[0];
+		keepBackups = backups[1];
 		y += ROW;
 		rows.add(new Row(Component.translatable("serverworks.config.operators_only"),
 				Component.translatable("serverworks.config.operators_only.hint"), y));
@@ -73,6 +79,18 @@ public final class ConfigScreen extends Screen {
 		return box;
 	}
 
+	/** Two small number boxes on one row, such as the first and last port. */
+	private EditBox[] pair(String key, int first, int second, int x, int y) {
+		rows.add(new Row(Component.translatable("serverworks.config." + key),
+				Component.translatable("serverworks.config." + key + ".hint"), y));
+		int half = (FIELD_WIDTH - 8) / 2;
+		EditBox a = new EditBox(font, x, y, half, 20, Component.translatable("serverworks.config." + key));
+		a.setValue(Integer.toString(first));
+		EditBox b = new EditBox(font, x + half + 8, y, half, 20, Component.translatable("serverworks.config." + key));
+		b.setValue(Integer.toString(second));
+		return new EditBox[] {addRenderableWidget(a), addRenderableWidget(b)};
+	}
+
 	private EditBox field(String key, String value, int x, int y) {
 		rows.add(new Row(Component.translatable("serverworks.config." + key),
 				Component.translatable("serverworks.config." + key + ".hint"), y));
@@ -86,6 +104,8 @@ public final class ConfigScreen extends Screen {
 		config.maxRunning = parse(maxRunning, config.maxRunning);
 		config.firstPort = parse(firstPort, config.firstPort);
 		config.lastPort = parse(lastPort, config.lastPort);
+		config.backupMinutes = parse(backupMinutes, config.backupMinutes);
+		config.keepBackups = parse(keepBackups, config.keepBackups);
 		config.operatorsOnly = operatorsOnly;
 		config.publicAddress = publicAddress == null ? "" : publicAddress.getValue().strip();
 		config.save();

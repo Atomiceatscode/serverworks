@@ -61,6 +61,7 @@ public final class HostRuntime {
 				tracker.reset();
 				continue;
 			}
+			maybeBackUp(instance, now);
 			try {
 				StatusPinger.Status status = StatusPinger.ping("127.0.0.1", snapshot.port());
 				instance.reportPlayers(status.online(), status.max());
@@ -74,6 +75,29 @@ public final class HostRuntime {
 				// Busy or briefly unreachable: try again next round, and never sleep on a failed ping.
 				tracker.observe(-1, now);
 			}
+		}
+	}
+
+	/** When each rack was last backed up automatically, by rack id. */
+	private final Map<UUID, Long> lastBackup = new ConcurrentHashMap<>();
+
+	/** Backs a running rack's world up when its turn comes, if automatic backups are on. */
+	private void maybeBackUp(ServerInstance instance, long now) {
+		int minutes = dev.serverworks.ServerworksConfig.get().backupMinutes;
+		if (minutes <= 0) {
+			return;
+		}
+		Path dir = Deployment.instanceDir(root, instance.rackId());
+		if (!java.nio.file.Files.isDirectory(dir.resolve(Backups.levelName(dir)))) {
+			// Proxies have no world to back up.
+			return;
+		}
+		long last = lastBackup.computeIfAbsent(instance.rackId(), id -> now);
+		if (now - last >= TimeUnit.MINUTES.toMillis(minutes)) {
+			lastBackup.put(instance.rackId(), now);
+			Backups.backUp(dir, instance, dev.serverworks.ServerworksConfig.get().keepBackups)
+					.whenComplete((made, error) -> instance.note(error == null
+							? "Backed up the world as " + made.name() : "Automatic backup failed: " + error.getMessage()));
 		}
 	}
 

@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "serverworks:blank_disk",
+    "minecraft:map",
+    "minecraft:grass_block"
+  ],
+  "result": {
+    "id": "serverworks:world_drive"
+  }
+}

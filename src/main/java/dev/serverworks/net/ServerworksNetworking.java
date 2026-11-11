@@ -31,6 +31,7 @@ public final class ServerworksNetworking {
 		PayloadTypeRegistry.clientboundPlay().register(InstanceStatusPayload.TYPE, InstanceStatusPayload.STREAM_CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(GatewayTripPayload.TYPE, GatewayTripPayload.STREAM_CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(ClientPackPayload.TYPE, ClientPackPayload.STREAM_CODEC);
+		PayloadTypeRegistry.clientboundPlay().register(DiskUpdatesPayload.TYPE, DiskUpdatesPayload.STREAM_CODEC);
 		PayloadTypeRegistry.serverboundPlay().register(RackActionPayload.TYPE, RackActionPayload.STREAM_CODEC);
 		PayloadTypeRegistry.serverboundPlay().register(ConsoleCommandPayload.TYPE, ConsoleCommandPayload.STREAM_CODEC);
 		ServerPlayNetworking.registerGlobalReceiver(RackActionPayload.TYPE, (payload, context) -> {
@@ -43,8 +44,37 @@ public final class ServerworksNetworking {
 				menu.handleCommand(payload.command());
 			}
 		});
+		PayloadTypeRegistry.serverboundPlay().register(EditItemPayload.TYPE, EditItemPayload.STREAM_CODEC);
+		PayloadTypeRegistry.clientboundPlay().register(BackupsPayload.TYPE, BackupsPayload.STREAM_CODEC);
+		PayloadTypeRegistry.serverboundPlay().register(RestoreBackupPayload.TYPE, RestoreBackupPayload.STREAM_CODEC);
+		ServerPlayNetworking.registerGlobalReceiver(RestoreBackupPayload.TYPE, (payload, context) -> {
+			if (context.player().containerMenu instanceof ServerCoreMenu menu && menu.containerId == payload.containerId()) {
+				menu.restore(payload.name());
+			}
+		});
+		ServerPlayNetworking.registerGlobalReceiver(EditItemPayload.TYPE, (payload, context) -> onEditItem(payload, context.player()));
 		ServerPlayNetworking.registerGlobalReceiver(SelectProjectPayload.TYPE,
 				(payload, context) -> onSelect(payload, context.server(), context.player()));
+	}
+
+	/** Writes an edited Config Card or World Drive back onto the item in the player's hand. */
+	private static void onEditItem(EditItemPayload payload, ServerPlayer player) {
+		net.minecraft.world.item.ItemStack held = player.getItemInHand(payload.hand());
+		if (payload.settings() != null && held.is(dev.serverworks.registry.ModItems.CONFIG_CARD)) {
+			held.set(dev.serverworks.registry.ModComponents.SERVER_SETTINGS, payload.settings());
+		} else if (payload.drive() != null && held.is(dev.serverworks.registry.ModItems.WORLD_DRIVE)) {
+			dev.serverworks.item.WorldDrive drive = payload.drive();
+			dev.serverworks.item.WorldDrive old = held.get(dev.serverworks.registry.ModComponents.WORLD_DRIVE);
+			// A drive keeps the id (and so the world) it already has; only new drives get one.
+			java.util.UUID id = old != null ? old.id() : java.util.UUID.randomUUID();
+			java.util.Optional<String> importSave = drive.importSave();
+			// Copying a saved world reads this computer's saves, which only its owner may do.
+			if (importSave.isPresent() && !dev.serverworks.machine.WorldDrives.canImport(player, importSave.get())) {
+				importSave = java.util.Optional.empty();
+			}
+			held.set(dev.serverworks.registry.ModComponents.WORLD_DRIVE,
+					new dev.serverworks.item.WorldDrive(id, drive.name(), drive.seed(), drive.type(), importSave));
+		}
 	}
 
 	public static void forget(UUID player) {
@@ -65,7 +95,20 @@ public final class ServerworksNetworking {
 			return;
 		}
 		try {
-			Serverworks.catalog().project(payload.projectId()).whenComplete((project, error) -> server.execute(() -> {
+			var catalog = Serverworks.catalog();
+			var versionLookup = payload.versionId().isEmpty()
+					? java.util.concurrent.CompletableFuture.<dev.serverworks.catalog.model.ProjectVersion>completedFuture(null)
+					: catalog.version(payload.versionId());
+			catalog.project(payload.projectId()).thenCombine(versionLookup, (project, version) -> {
+				if (version == null) {
+					return DiskLabel.of(project);
+				}
+				// A pin must name a version of this very project.
+				if (!version.projectId().equals(project.id())) {
+					throw new CatalogException(CatalogException.Kind.NOT_FOUND, "That version belongs to another project");
+				}
+				return DiskLabel.of(project).pinnedTo(version.id(), version.versionNumber());
+			}).whenComplete((label, error) -> server.execute(() -> {
 				// The player may have closed the writer, or opened another, while the catalog answered.
 				if (player.hasDisconnected() || player.containerMenu != menu) {
 					return;
@@ -74,7 +117,7 @@ public final class ServerworksNetworking {
 					reply(player, payload, outcomeOf(error));
 					return;
 				}
-				menu.select(DiskLabel.of(project));
+				menu.select(label);
 				reply(player, payload, Outcome.READY);
 			}));
 		} catch (CatalogException e) {

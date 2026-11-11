@@ -8,6 +8,7 @@ import dev.serverworks.rack.RackStructure;
 import dev.serverworks.rack.RackValidator;
 import dev.serverworks.registry.ModBlockEntities;
 import dev.serverworks.registry.ModComponents;
+import dev.serverworks.registry.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.chat.Component;
@@ -28,6 +29,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -51,6 +53,16 @@ public final class ServerCoreBlockEntity extends BlockEntity implements MenuProv
 	/** The server state at the last output update, to notice changes worth a sound. */
 	private dev.serverworks.host.ServerInstance.@Nullable State lastState;
 	private int outputTicks;
+	/** When on, a redstone signal starting or stopping starts or stops the rack. Off until an operator enables it. */
+	private boolean redstoneControl;
+	/** Whether the core was powered at the last look, so only changes act. */
+	private boolean powered;
+	/** The comparator output last announced to neighbours. */
+	private int signal;
+	/** Set while the server stops for an update; it starts again once it is down. */
+	private boolean restartPending;
+	/** Game rule commands from the Config Card, sent once the server is up. */
+	private List<String> pendingRules = List.of();
 
 	public ServerCoreBlockEntity(BlockPos pos, BlockState state) {
 		super(ModBlockEntities.SERVER_CORE, pos, state);
@@ -64,8 +76,119 @@ public final class ServerCoreBlockEntity extends BlockEntity implements MenuProv
 		}
 		if ((level.getGameTime() + (pos.asLong() & 0x7)) % OUTPUT_INTERVAL == 0) {
 			core.updateOutputs();
+			core.updateSignal();
+			core.continueRestart();
 		}
 	}
+
+	// ---- updates ----
+
+	/** Stops the server and starts it again once it is down, so new versions are installed. */
+	void restart() {
+		dev.serverworks.host.ServerInstance instance = dev.serverworks.Serverworks.host().instances().peek(rackId);
+		if (instance == null) {
+			return;
+		}
+		restartPending = true;
+		instance.stop();
+	}
+
+	private void continueRestart() {
+		if (!restartPending) {
+			return;
+		}
+		dev.serverworks.host.ServerInstance instance = dev.serverworks.Serverworks.host().instances().peek(rackId);
+		if (instance == null || !instance.snapshot().state().active()) {
+			restartPending = false;
+			String refused = RackControl.restart(this);
+			if (refused != null) {
+				dev.serverworks.Serverworks.LOGGER.info("The rack at {} did not restart after updating: {}",
+						worldPosition.toShortString(), refused);
+			}
+		}
+	}
+
+	/** Rewrites pinned disks in this rack's bays to the versions given, by project id. */
+	void repin(Map<String, dev.serverworks.catalog.model.ProjectVersion> newest) {
+		if (level == null || scan == null || !scan.formed() || newest.isEmpty()) {
+			return;
+		}
+		for (Pos pos : scan.structure().driveBays()) {
+			if (level.getBlockEntity(new BlockPos(pos.x(), pos.y(), pos.z())) instanceof DriveBayBlockEntity bay) {
+				for (int slot = 0; slot < bay.getContainerSize(); slot++) {
+					ItemStack stack = bay.getItem(slot);
+					DiskLabel label = stack.get(ModComponents.DISK_LABEL);
+					if (label == null || label.pinnedVersion().isEmpty() || !newest.containsKey(label.projectId())) {
+						continue;
+					}
+					var version = newest.get(label.projectId());
+					ItemStack updated = stack.copy();
+					updated.set(ModComponents.DISK_LABEL, label.pinnedTo(version.id(), version.versionNumber()));
+					bay.setItem(slot, updated);
+				}
+				bay.setChanged();
+			}
+		}
+		contentsChanged();
+	}
+
+	// ---- redstone ----
+
+	public boolean redstoneControl() {
+		return redstoneControl;
+	}
+
+	/** Turns redstone control on or off. The current power level becomes the starting point. */
+	void setRedstoneControl(boolean on) {
+		redstoneControl = on;
+		if (level != null) {
+			powered = level.hasNeighborSignal(worldPosition);
+		}
+		statusVersion++;
+		setChanged();
+	}
+
+	/** Called when a neighbouring block changes; acts only when the power level changes. */
+	void neighborSignal(boolean nowPowered) {
+		if (nowPowered == powered) {
+			return;
+		}
+		powered = nowPowered;
+		setChanged();
+		if (redstoneControl) {
+			RackControl.redstone(this, nowPowered);
+		}
+	}
+
+	/**
+	 * What a comparator reads: 0 while the server is not running, 1 when it runs empty, and up to
+	 * 15 as it fills.
+	 */
+	public int comparatorSignal() {
+		if (scan == null || !scan.formed()) {
+			return 0;
+		}
+		dev.serverworks.host.ServerInstance instance = dev.serverworks.Serverworks.host().instances().peek(rackId);
+		if (instance == null) {
+			return 0;
+		}
+		dev.serverworks.host.ServerInstance.Snapshot snapshot = instance.snapshot();
+		if (snapshot.state() != dev.serverworks.host.ServerInstance.State.RUNNING) {
+			return 0;
+		}
+		int max = Math.max(1, scan.structure().maxPlayers());
+		int online = Math.max(0, snapshot.playersOnline());
+		return 1 + Math.min(14, (int) Math.ceil(14.0 * online / max));
+	}
+
+	private void updateSignal() {
+		int now = comparatorSignal();
+		if (now != signal && level != null) {
+			signal = now;
+			level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
+		}
+	}
+
 
 	/** Brings the rack's Gateways and Status Displays up to date with its server. */
 	void updateOutputs() {
@@ -85,6 +208,12 @@ public final class ServerCoreBlockEntity extends BlockEntity implements MenuProv
 			if (state.getBlock() instanceof RackComponentBlock && state.getValue(RackComponentBlock.ACTIVE) != active) {
 				serverLevel.setBlock(blockPos, state.setValue(RackComponentBlock.ACTIVE, active), Block.UPDATE_CLIENTS);
 			}
+		}
+		if (running && lastState != dev.serverworks.host.ServerInstance.State.RUNNING && instance != null) {
+			for (String command : pendingRules) {
+				instance.command(command);
+			}
+			pendingRules = List.of();
 		}
 		RackEffects.update(serverLevel, worldPosition, rack, lastState, snapshot.state(), outputTicks++);
 		lastState = snapshot.state();
@@ -253,7 +382,7 @@ public final class ServerCoreBlockEntity extends BlockEntity implements MenuProv
 			return RackStatus.UNKNOWN;
 		}
 		return RackStatus.of(scan, scan.formed() ? disks(scan.structure()) : List.of(),
-				scan.formed() ? links(scan.structure()).size() : 0);
+				scan.formed() ? links(scan.structure()).size() : 0, redstoneControl);
 	}
 
 	/** The label of every disk in this rack's drive bays, in bay order. */
@@ -274,6 +403,38 @@ public final class ServerCoreBlockEntity extends BlockEntity implements MenuProv
 			}
 		}
 		return disks;
+	}
+
+	void setPendingRules(List<String> commands) {
+		pendingRules = List.copyOf(commands);
+	}
+
+	/** The first Config Card in this rack's bays, or null. A blank card counts, with default settings. */
+	public dev.serverworks.item.@org.jspecify.annotations.Nullable ServerSettings configCard(RackStructure rack) {
+		ItemStack card = firstInBays(rack, ModItems.CONFIG_CARD);
+		return card == null ? null : dev.serverworks.item.ConfigCardItem.settings(card);
+	}
+
+	/** The first World Drive in this rack's bays, or null for the rack's own world. */
+	public dev.serverworks.item.@org.jspecify.annotations.Nullable WorldDrive worldDrive(RackStructure rack) {
+		ItemStack drive = firstInBays(rack, ModItems.WORLD_DRIVE);
+		return drive == null ? null : drive.get(ModComponents.WORLD_DRIVE);
+	}
+
+	private @Nullable ItemStack firstInBays(RackStructure rack, net.minecraft.world.item.Item item) {
+		if (level == null) {
+			return null;
+		}
+		for (Pos pos : rack.driveBays()) {
+			if (level.getBlockEntity(new BlockPos(pos.x(), pos.y(), pos.z())) instanceof DriveBayBlockEntity bay) {
+				for (int slot = 0; slot < bay.getContainerSize(); slot++) {
+					if (bay.getItem(slot).is(item)) {
+						return bay.getItem(slot);
+					}
+				}
+			}
+		}
+		return null;
 	}
 
 	/** Every Link Card in this rack's drive bays, in bay order, without repeats. */
@@ -338,12 +499,16 @@ public final class ServerCoreBlockEntity extends BlockEntity implements MenuProv
 	protected void saveAdditional(ValueOutput output) {
 		super.saveAdditional(output);
 		output.store("rack_id", UUIDUtil.CODEC, rackId);
+		output.putBoolean("redstone_control", redstoneControl);
+		output.putBoolean("powered", powered);
 	}
 
 	@Override
 	protected void loadAdditional(ValueInput input) {
 		super.loadAdditional(input);
 		rackId = input.read("rack_id", UUIDUtil.CODEC).orElseGet(UUID::randomUUID);
+		redstoneControl = input.getBooleanOr("redstone_control", false);
+		powered = input.getBooleanOr("powered", false);
 	}
 
 	// ---- menu ----

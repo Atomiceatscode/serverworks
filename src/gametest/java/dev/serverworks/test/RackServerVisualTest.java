@@ -57,9 +57,17 @@ public final class RackServerVisualTest implements FabricClientGameTest {
 			return;
 		}
 		context.getInput().resizeWindow(1280, 720);
-		List<DiskLabel> disks = List.of(
-				DiskLabel.of(Serverworks.catalog().project("luckperms").join()),
-				DiskLabel.of(Serverworks.catalog().project("chunky").join()));
+		// Chunky is pinned to an older build, so the Server Core has an update to offer.
+		DiskLabel chunky = DiskLabel.of(Serverworks.catalog().project("chunky").join());
+		String minecraft = net.minecraft.SharedConstants.getCurrentVersion().name();
+		List<dev.serverworks.catalog.model.ProjectVersion> chunkyBuilds = Serverworks.catalog()
+				.versions("chunky", PLATFORM.acceptedLoaders(), List.of(minecraft)).join();
+		boolean pinnedOld = chunkyBuilds.size() > 1;
+		if (pinnedOld) {
+			var older = chunkyBuilds.get(chunkyBuilds.size() - 1);
+			chunky = chunky.pinnedTo(older.id(), older.versionNumber());
+		}
+		List<DiskLabel> disks = List.of(DiskLabel.of(Serverworks.catalog().project("luckperms").join()), chunky);
 
 		try (TestSingleplayerContext world = context.worldBuilder().create()) {
 			world.getConnection().waitForChunksRender();
@@ -136,9 +144,10 @@ public final class RackServerVisualTest implements FabricClientGameTest {
 			if (PLATFORM.group() == Platform.Group.PLUGIN) {
 				context.runOnClient(client -> ClientPlayNetworking.send(
 						new ConsoleCommandPayload(screen(client).getMenu().containerId, "plugins")));
+				// Paper lists plugins one per line or several to a line, depending on their kind.
 				context.waitFor(client -> screen(client).consoleLines().stream().anyMatch(l -> l.contains("Server Plugins (2)"))
-						&& screen(client).consoleLines().stream().anyMatch(l -> l.endsWith(" - LuckPerms"))
-						&& screen(client).consoleLines().stream().anyMatch(l -> l.endsWith(" - Chunky")), 20 * 30);
+						&& screen(client).consoleLines().stream().anyMatch(l -> l.matches(".* - .*LuckPerms.*"))
+						&& screen(client).consoleLines().stream().anyMatch(l -> l.matches(".* - .*Chunky.*")), 20 * 30);
 			} else {
 				// Mod servers have no plugin list; the console still has to answer.
 				context.runOnClient(client -> ClientPlayNetworking.send(
@@ -147,6 +156,73 @@ public final class RackServerVisualTest implements FabricClientGameTest {
 			}
 			context.waitTicks(5);
 			context.takeScreenshot("server_4_console");
+			context.runOnClient(client -> screen(client).showConsole(false));
+			ServerInstance running = Serverworks.host().instances().peek(rackId);
+
+			if (pinnedOld) {
+				// The older pinned build shows as an update; updating re-pins it and restarts the server.
+				context.waitFor(client -> screen(client).updateCount() >= 1, 20 * 60);
+				context.waitTicks(5);
+				context.takeScreenshot("server_5_update_available");
+				context.runOnClient(client -> screen(client).pressUpdate());
+				context.waitFor(client -> running.snapshot().state() != State.RUNNING, 20 * 60);
+				context.waitFor(client -> running.snapshot().state() == State.RUNNING || failed(client), 3 * TICKS_PER_MINUTE);
+				context.waitFor(client -> screen(client).updateCount() == 0, 20 * 60);
+				String repinned = server.computeOnServer(s -> {
+					ServerCoreBlockEntity core = (ServerCoreBlockEntity) s.overworld().getBlockEntity(corePos);
+					return core.disks(core.lastScan().structure()).get(1).pinnedVersion().orElse("");
+				});
+				if (repinned.isEmpty() || repinned.equals(chunky.pinnedVersion().orElse(""))) {
+					throw new AssertionError("Updating should re-pin Chunky to its newest build");
+				}
+			}
+
+			// A comparator reading the core: 1 means running with nobody on.
+			BlockPos comparatorPos = corePos.north();
+			server.runOnServer(s -> {
+				ServerLevel level = s.overworld();
+				level.setBlockAndUpdate(comparatorPos.below(), Blocks.STONE.defaultBlockState());
+				level.setBlockAndUpdate(comparatorPos, Blocks.COMPARATOR.defaultBlockState()
+						.setValue(net.minecraft.world.level.block.ComparatorBlock.FACING, Direction.SOUTH));
+			});
+			context.waitTicks(30);
+			int reading = server.computeOnServer(s -> s.overworld().getBlockEntity(comparatorPos)
+					instanceof net.minecraft.world.level.block.entity.ComparatorBlockEntity comparator ? comparator.getOutputSignal() : -1);
+			if (reading != 1) {
+				throw new AssertionError("A comparator on a running, empty rack should read 1, not " + reading);
+			}
+
+			// With redstone control on, losing power stops the rack and power starts it again.
+			server.runOnServer(s -> {
+				ServerLevel level = s.overworld();
+				ServerCoreBlockEntity core = (ServerCoreBlockEntity) level.getBlockEntity(corePos);
+				dev.serverworks.machine.RackControl.setRedstoneControl(core, s.getPlayerList().getPlayers().getFirst(), true);
+				level.setBlockAndUpdate(comparatorPos, Blocks.REDSTONE_BLOCK.defaultBlockState());
+			});
+			context.waitTicks(10);
+			server.runOnServer(s -> s.overworld().setBlockAndUpdate(comparatorPos, Blocks.AIR.defaultBlockState()));
+			context.waitFor(client -> running.snapshot().state() == State.STOPPED, 2 * TICKS_PER_MINUTE);
+			server.runOnServer(s -> s.overworld().setBlockAndUpdate(comparatorPos, Blocks.REDSTONE_BLOCK.defaultBlockState()));
+			context.waitFor(client -> running.snapshot().state() == State.RUNNING || failed(client), 3 * TICKS_PER_MINUTE);
+			if (running.snapshot().state() != State.RUNNING) {
+				throw new AssertionError("A redstone signal should start the rack again");
+			}
+			server.runOnServer(s -> {
+				ServerLevel level = s.overworld();
+				ServerCoreBlockEntity core = (ServerCoreBlockEntity) level.getBlockEntity(corePos);
+				dev.serverworks.machine.RackControl.setRedstoneControl(core, s.getPlayerList().getPlayers().getFirst(), false);
+				level.setBlockAndUpdate(comparatorPos, Blocks.AIR.defaultBlockState());
+				level.setBlockAndUpdate(comparatorPos.below(), Blocks.AIR.defaultBlockState());
+			});
+			context.waitTicks(20);
+
+			// Back Up Now copies the running server's world.
+			context.runOnClient(client -> screen(client).showTab(2));
+			context.runOnClient(client -> screen(client).pressBackup());
+			context.waitFor(client -> screen(client).backupCount() >= 1, 2 * TICKS_PER_MINUTE);
+			context.waitTicks(5);
+			context.takeScreenshot("server_6_backups");
+			context.runOnClient(client -> screen(client).showTab(0));
 
 			// The rack from outside: the display reports the server and the Gateway is open.
 			context.runOnClient(client -> client.player.closeContainer());
@@ -197,6 +273,7 @@ public final class RackServerVisualTest implements FabricClientGameTest {
 			context.takeScreenshot("trip_4_back_home");
 
 			ServerInstance instance = Serverworks.host().instances().peek(rackId);
+
 			instance.stop();
 			context.waitFor(client -> instance.snapshot().state() == State.STOPPED, 2 * TICKS_PER_MINUTE);
 		}

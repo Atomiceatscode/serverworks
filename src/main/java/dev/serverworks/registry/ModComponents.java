@@ -24,6 +24,22 @@ public final class ModComponents {
 					.networkSynchronized(dev.serverworks.item.LinkTarget.STREAM_CODEC)
 					.build());
 
+	public static final DataComponentType<dev.serverworks.item.ServerSettings> SERVER_SETTINGS = Registry.register(
+			BuiltInRegistries.DATA_COMPONENT_TYPE,
+			Serverworks.id("server_settings"),
+			DataComponentType.<dev.serverworks.item.ServerSettings>builder()
+					.persistent(dev.serverworks.item.ServerSettings.CODEC)
+					.networkSynchronized(dev.serverworks.item.ServerSettings.STREAM_CODEC)
+					.build());
+
+	public static final DataComponentType<dev.serverworks.item.WorldDrive> WORLD_DRIVE = Registry.register(
+			BuiltInRegistries.DATA_COMPONENT_TYPE,
+			Serverworks.id("world_drive"),
+			DataComponentType.<dev.serverworks.item.WorldDrive>builder()
+					.persistent(dev.serverworks.item.WorldDrive.CODEC)
+					.networkSynchronized(dev.serverworks.item.WorldDrive.STREAM_CODEC)
+					.build());
+
 	private ModComponents() {
 	}
 

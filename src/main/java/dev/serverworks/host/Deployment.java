@@ -35,6 +35,8 @@ public final class Deployment implements ServerInstance.Preparation {
 	static final String SERVER_JAR = "server.jar";
 	/** Lists the files this mod placed, so it only ever removes its own. */
 	static final String MANIFEST = ".serverworks-managed.json";
+	/** Which catalog version of each project the server was last given, for the Server Core's update check. */
+	static final String VERSIONS = ".serverworks-versions.json";
 	/** Records which installer build last ran in a server folder. */
 	static final String INSTALLED_MARKER = ".serverworks-installed";
 	/** Present while a server is set up to sit behind a proxy. */
@@ -179,6 +181,7 @@ public final class Deployment implements ServerInstance.Preparation {
 				default -> {
 					ProxyConfigs.backend(dir, request.platform(), request.asBackend());
 					writeProperties(dir);
+					importWorld(dir, progress);
 				}
 			}
 			syncContent(dir, contentCache);
@@ -257,9 +260,52 @@ public final class Deployment implements ServerInstance.Preparation {
 		Files.writeString(marker, id, StandardCharsets.UTF_8);
 	}
 
+	/** {@code server.properties} keys a Config Card may set; everything about the network stays ours. */
+	static final java.util.Set<String> CARD_KEYS = java.util.Set.of("difficulty", "gamemode", "force-gamemode", "hardcore",
+			"allow-flight", "view-distance", "simulation-distance", "spawn-protection", "motd", "generate-structures");
+
+	/** Copies a saved world in the first time a World Drive that asks for it is used. */
+	private void importWorld(Path dir, ServerInstance.Progress progress) throws IOException {
+		Path source = request.world().importFrom();
+		Path target = dir.resolve(request.world().levelName()).normalize();
+		if (source == null || Files.exists(target) || !target.startsWith(dir)) {
+			return;
+		}
+		if (!Files.isRegularFile(source.resolve("level.dat"))) {
+			throw new IOException("The saved world to copy has no level.dat");
+		}
+		progress.log("Copying the saved world " + source.getFileName() + " onto the rack");
+		try (var walk = Files.walk(source)) {
+			for (Path from : (Iterable<Path>) walk::iterator) {
+				Path relative = source.relativize(from);
+				if (relative.toString().equals("session.lock") || Files.isSymbolicLink(from)) {
+					continue;
+				}
+				Path to = target.resolve(relative.toString()).normalize();
+				if (!to.startsWith(target)) {
+					throw new IOException("Refusing to copy outside the world folder");
+				}
+				if (Files.isDirectory(from)) {
+					Files.createDirectories(to);
+				} else {
+					Files.createDirectories(to.getParent());
+					Files.copy(from, to, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				}
+			}
+		}
+	}
+
 	private void writeProperties(Path dir) throws IOException {
 		boolean proxied = request.asBackend() != null;
 		Map<String, String> forced = new LinkedHashMap<>();
+		for (Map.Entry<String, String> setting : request.settings().entrySet()) {
+			if (CARD_KEYS.contains(setting.getKey())) {
+				forced.put(setting.getKey(), setting.getValue());
+			}
+		}
+		forced.put("level-name", request.world().levelName());
+		forced.put("level-type", request.world().levelType());
+		forced.put("level-seed", request.world().seed());
 		forced.put("server-port", Integer.toString(request.port()));
 		forced.put("query.port", Integer.toString(request.port()));
 		forced.put("max-players", Integer.toString(request.maxPlayers()));
@@ -283,6 +329,29 @@ public final class Deployment implements ServerInstance.Preparation {
 		ServerProperties.apply(dir.resolve("server.properties"), forced, defaults);
 	}
 
+	/** A project's version as last installed on a rack's server. */
+	public record Installed(String versionId, String versionNumber) {
+	}
+
+	/** What each project on a rack's server was last installed at, by project id. Empty before the first start. */
+	public static Map<String, Installed> installedVersions(Path instanceDir) {
+		Map<String, Installed> out = new java.util.HashMap<>();
+		Path file = instanceDir.resolve(VERSIONS);
+		if (!Files.isRegularFile(file)) {
+			return out;
+		}
+		try {
+			com.google.gson.JsonObject root = JsonParser.parseString(Files.readString(file, StandardCharsets.UTF_8)).getAsJsonObject();
+			for (Map.Entry<String, JsonElement> entry : root.entrySet()) {
+				com.google.gson.JsonObject value = entry.getValue().getAsJsonObject();
+				out.put(entry.getKey(), new Installed(value.get("id").getAsString(), value.get("number").getAsString()));
+			}
+		} catch (IOException | RuntimeException e) {
+			// An unreadable record only means updates cannot be shown.
+		}
+		return out;
+	}
+
 	/** Makes the instance folder hold exactly the wanted files, touching only files this mod put there. */
 	private void syncContent(Path dir, Map<ContentFile, Path> wanted) throws IOException {
 		Path manifestFile = dir.resolve(MANIFEST);
@@ -300,7 +369,7 @@ public final class Deployment implements ServerInstance.Preparation {
 		Set<String> current = new HashSet<>();
 		for (Map.Entry<ContentFile, Path> entry : wanted.entrySet()) {
 			ContentFile file = entry.getKey();
-			String relative = file.directory() + "/" + file.fileName();
+			String relative = request.world().relocate(file.directory()) + "/" + file.fileName();
 			Path target = dir.resolve(relative).normalize();
 			if (!target.startsWith(dir)) {
 				throw new IOException("Refusing to write outside the server folder");
@@ -318,6 +387,16 @@ public final class Deployment implements ServerInstance.Preparation {
 		JsonArray array = new JsonArray();
 		current.stream().sorted().forEach(array::add);
 		Files.writeString(manifestFile, new Gson().toJson(array), StandardCharsets.UTF_8);
+		com.google.gson.JsonObject versions = new com.google.gson.JsonObject();
+		for (ContentFile file : wanted.keySet()) {
+			if (file.projectId() != null && file.versionId() != null) {
+				com.google.gson.JsonObject entry = new com.google.gson.JsonObject();
+				entry.addProperty("id", file.versionId());
+				entry.addProperty("number", file.versionNumber() == null ? "" : file.versionNumber());
+				versions.add(file.projectId(), entry);
+			}
+		}
+		Files.writeString(dir.resolve(VERSIONS), new Gson().toJson(versions), StandardCharsets.UTF_8);
 	}
 
 	/** Hard-links when the file system allows it, so shared files cost no extra disk space. */

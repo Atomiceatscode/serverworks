@@ -36,27 +36,29 @@ public record RackStatus(
 		int ramMb,
 		int maxPlayers,
 		List<DiskLabel> disks,
-		int linkCount) {
+		int linkCount,
+		boolean redstoneControl) {
 
 	/** Far more than the largest rack can hold; a bound for reading untrusted lengths. */
 	private static final int MAX_DISKS = 2048;
 
 	public static final RackStatus UNKNOWN = new RackStatus(Problem.TOO_SMALL, null, null, null, 0, 0, 0, 0, 0, 0, 0, 0,
-			List.of(), 0);
+			List.of(), 0, false);
 
 	public RackStatus {
 		disks = List.copyOf(disks);
 	}
 
-	public static RackStatus of(RackScan scan, List<DiskLabel> disks, int linkCount) {
+	public static RackStatus of(RackScan scan, List<DiskLabel> disks, int linkCount, boolean redstoneControl) {
 		if (!scan.formed()) {
 			BlockPos pos = scan.problemPos() == null ? null
 					: new BlockPos(scan.problemPos().x(), scan.problemPos().y(), scan.problemPos().z());
-			return new RackStatus(scan.problem(), pos, null, null, 0, 0, 0, 0, 0, 0, 0, 0, List.of(), 0);
+			return new RackStatus(scan.problem(), pos, null, null, 0, 0, 0, 0, 0, 0, 0, 0, List.of(), 0, redstoneControl);
 		}
 		RackStructure rack = scan.structure();
 		return new RackStatus(Problem.NONE, null, rack.platform(), rack.tier(), rack.sizeX(), rack.sizeY(), rack.sizeZ(),
-				rack.driveBays().size(), rack.memoryBanks(), rack.vents(), rack.ramMb(), rack.maxPlayers(), disks, linkCount);
+				rack.driveBays().size(), rack.memoryBanks(), rack.vents(), rack.ramMb(), rack.maxPlayers(), disks, linkCount,
+				redstoneControl);
 	}
 
 	public boolean formed() {
@@ -97,6 +99,7 @@ public record RackStatus(
 			DiskLabel.STREAM_CODEC.encode(out, disk);
 		}
 		out.writeVarInt(linkCount);
+		out.writeBoolean(redstoneControl);
 	}
 
 	public static RackStatus read(FriendlyByteBuf in) {
@@ -121,7 +124,7 @@ public record RackStatus(
 			disks.add(DiskLabel.STREAM_CODEC.decode(in));
 		}
 		return new RackStatus(problem, problemPos, platform, tier, sizeX, sizeY, sizeZ, driveBays, memoryBanks, vents,
-				ramMb, maxPlayers, disks, in.readVarInt());
+				ramMb, maxPlayers, disks, in.readVarInt(), in.readBoolean());
 	}
 
 	private static <T> @Nullable T pick(T[] values, int indexPlusOne) {

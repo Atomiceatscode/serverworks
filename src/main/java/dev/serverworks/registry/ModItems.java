@@ -33,6 +33,10 @@ public final class ModItems {
 			new Item.Properties().stacksTo(1).rarity(Rarity.RARE), false);
 	public static final Item LINK_CARD = register("link_card", dev.serverworks.item.LinkCardItem::new,
 			new Item.Properties().stacksTo(16), true);
+	public static final Item CONFIG_CARD = register("config_card", dev.serverworks.item.ConfigCardItem::new,
+			new Item.Properties().stacksTo(1), true);
+	public static final Item WORLD_DRIVE = register("world_drive", dev.serverworks.item.WorldDriveItem::new,
+			new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON), true);
 	public static final Item WRENCH = register("wrench", WrenchItem::new, new Item.Properties().stacksTo(1), true);
 	public static final Item OPERATORS_MANUAL = register("operators_manual", dev.serverworks.item.OperatorsManualItem::new,
 			new Item.Properties().stacksTo(1), true);

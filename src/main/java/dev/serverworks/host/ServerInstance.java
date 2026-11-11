@@ -324,6 +324,12 @@ public final class ServerInstance {
 	}
 
 	/** Records the latest player count from a status request. */
+	/** Adds a line of Serverworks' own to the server's console. */
+	public synchronized void note(String line) {
+		console.add("[Serverworks] " + line);
+		version.incrementAndGet();
+	}
+
 	public synchronized void reportPlayers(int online, int max) {
 		if (state == State.RUNNING && (online != playersOnline || max != playersMax)) {
 			playersOnline = online;

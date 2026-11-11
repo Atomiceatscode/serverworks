@@ -64,6 +64,9 @@ public final class ServerCoreMenu extends AbstractContainerMenu {
 			case STOP -> RackControl.stop(core, serverPlayer);
 			case ACCEPT_EULA -> RackControl.acceptEula(serverPlayer);
 			case EXPORT_PACK -> sendClientPack(serverPlayer);
+			case TOGGLE_REDSTONE -> RackControl.setRedstoneControl(core, serverPlayer, !core.redstoneControl());
+			case UPDATE_DISKS -> RackControl.updateDisks(core, serverPlayer);
+			case BACKUP_NOW -> backUp(serverPlayer);
 		};
 		setNotice(refused);
 	}
@@ -93,6 +96,70 @@ public final class ServerCoreMenu extends AbstractContainerMenu {
 				.resolve(dev.serverworks.host.ClientPack.FILE_NAME);
 	}
 
+	/** True while a backup or restore started from this screen is running. */
+	private boolean backupBusy;
+	private boolean backupsSent;
+
+	private @Nullable String backUp(ServerPlayer serverPlayer) {
+		if (!RackControl.canControl(serverPlayer)) {
+			return "serverworks.notice.not_allowed";
+		}
+		if (backupBusy) {
+			return null;
+		}
+		java.nio.file.Path dir = dev.serverworks.host.Deployment.instanceDir(Serverworks.host().root(), core.rackId());
+		if (!java.nio.file.Files.isDirectory(dir.resolve(dev.serverworks.host.Backups.levelName(dir)))) {
+			return "serverworks.notice.no_world";
+		}
+		backupBusy = true;
+		backupsSent = false;
+		var server = serverPlayer.level().getServer();
+		dev.serverworks.host.Backups.backUp(dir, Serverworks.host().instances().peek(core.rackId()),
+				dev.serverworks.ServerworksConfig.get().keepBackups).whenComplete((made, error) -> server.execute(() -> {
+			backupBusy = false;
+			backupsSent = false;
+			setNotice(error == null ? "serverworks.notice.backed_up" : "serverworks.notice.backup_failed");
+		}));
+		return null;
+	}
+
+	/** Server side: restores a backup, if the player may and the server is stopped. */
+	public void restore(String name) {
+		if (core == null || !(player instanceof ServerPlayer serverPlayer)) {
+			return;
+		}
+		if (!RackControl.canControl(serverPlayer)) {
+			setNotice("serverworks.notice.not_allowed");
+			return;
+		}
+		ServerInstance instance = Serverworks.host().instances().peek(core.rackId());
+		if (instance != null && instance.snapshot().state().active()) {
+			setNotice("serverworks.notice.stop_first");
+			return;
+		}
+		if (backupBusy) {
+			return;
+		}
+		backupBusy = true;
+		backupsSent = false;
+		java.nio.file.Path dir = dev.serverworks.host.Deployment.instanceDir(Serverworks.host().root(), core.rackId());
+		var server = serverPlayer.level().getServer();
+		java.util.concurrent.CompletableFuture.runAsync(() -> {
+			try {
+				dev.serverworks.host.Backups.restore(dir, name);
+			} catch (java.io.IOException e) {
+				throw new java.io.UncheckedIOException(e);
+			}
+		}).whenComplete((ignored, error) -> server.execute(() -> {
+			backupBusy = false;
+			backupsSent = false;
+			if (error != null) {
+				Serverworks.LOGGER.warn("Could not restore backup {}", name, error);
+			}
+			setNotice(error == null ? "serverworks.notice.restored" : "serverworks.notice.restore_failed");
+		}));
+	}
+
 	public void handleCommand(String command) {
 		if (core != null && player instanceof ServerPlayer serverPlayer) {
 			setNotice(RackControl.command(core, serverPlayer, command));
@@ -112,10 +179,20 @@ public final class ServerCoreMenu extends AbstractContainerMenu {
 		}
 		if (core.statusVersion() != sentRackVersion) {
 			sentRackVersion = core.statusVersion();
-			ServerPlayNetworking.send(serverPlayer, new RackStatusPayload(containerId, core.status()));
+			RackStatus status = core.status();
+			ServerPlayNetworking.send(serverPlayer, new RackStatusPayload(containerId, status));
+			requestUpdates(serverPlayer, status);
 		}
 		ServerInstance instance = Serverworks.host().instances().peek(core.rackId());
 		ServerInstance.Snapshot snapshot = instance == null ? ServerInstance.Snapshot.IDLE : instance.snapshot();
+		if (!backupsSent) {
+			backupsSent = true;
+			// Backups are the world's history, so only those who run the rack see them.
+			List<dev.serverworks.host.Backups.Backup> list = RackControl.canControl(serverPlayer)
+					? dev.serverworks.host.Backups.list(dev.serverworks.host.Deployment.instanceDir(Serverworks.host().root(), core.rackId()))
+					: List.of();
+			ServerPlayNetworking.send(serverPlayer, new dev.serverworks.net.BackupsPayload(containerId, list, backupBusy));
+		}
 		boolean eula = Serverworks.host().eulaAccepted();
 		boolean consoleBehind = instance != null && sentConsole >= 0 && instance.console().nextSequence() > sentConsole
 				&& RackControl.canControl(serverPlayer);
@@ -144,6 +221,21 @@ public final class ServerCoreMenu extends AbstractContainerMenu {
 				snapshot.failure(), control ? snapshot.detail() : "", snapshot.port(), snapshot.playersOnline(),
 				snapshot.hibernated(), packAvailable, eula, control, notice, from, lines));
 		notice = "";
+	}
+
+	/** Looks for newer versions of the rack's disks in the background and sends them when known. */
+	private void requestUpdates(ServerPlayer serverPlayer, RackStatus status) {
+		if (core == null || !status.formed() || status.platform() == null || status.disks().isEmpty()) {
+			ServerPlayNetworking.send(serverPlayer, new dev.serverworks.net.DiskUpdatesPayload(containerId, List.of()));
+			return;
+		}
+		int asked = sentRackVersion;
+		var server = serverPlayer.level().getServer();
+		DiskUpdates.check(core.rackId(), status.platform(), status.disks()).thenAccept(updates -> server.execute(() -> {
+			if (serverPlayer.containerMenu == this && asked == sentRackVersion && !serverPlayer.hasDisconnected()) {
+				ServerPlayNetworking.send(serverPlayer, new dev.serverworks.net.DiskUpdatesPayload(containerId, updates));
+			}
+		}));
 	}
 
 	@Override

@@ -49,6 +49,10 @@ public final class ModDiskItem extends Item {
 			lines.accept(Component.translatable("item.serverworks.mod_disk.runs_on", loaderList(label))
 					.withStyle(ChatFormatting.DARK_GRAY));
 		}
+		if (label.pinnedVersion().isPresent()) {
+			lines.accept(Component.translatable("item.serverworks.mod_disk.pinned",
+					label.pinnedName().orElse(label.pinnedVersion().get())).withStyle(ChatFormatting.AQUA));
+		}
 		if (label.clientSide() == SideSupport.REQUIRED) {
 			lines.accept(Component.translatable("item.serverworks.mod_disk.client_required")
 					.withStyle(ChatFormatting.GOLD));

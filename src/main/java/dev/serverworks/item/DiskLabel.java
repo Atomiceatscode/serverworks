@@ -24,6 +24,7 @@ import java.util.Optional;
  * @param iconUrl       CDN address of the project icon, when it has one
  * @param color         packed RGB accent colour, or -1
  * @param pinnedVersion a specific version id to use instead of the newest compatible one
+ * @param pinnedName    that version's name as its author wrote it, for showing on the disk
  */
 public record DiskLabel(
 		String projectId,
@@ -36,7 +37,8 @@ public record DiskLabel(
 		int color,
 		SideSupport clientSide,
 		SideSupport serverSide,
-		Optional<String> pinnedVersion) {
+		Optional<String> pinnedVersion,
+		Optional<String> pinnedName) {
 
 	private static final int MAX_LOADERS = 48;
 
@@ -55,7 +57,8 @@ public record DiskLabel(
 			Codec.INT.optionalFieldOf("color", -1).forGetter(DiskLabel::color),
 			SIDE_CODEC.optionalFieldOf("client", SideSupport.UNKNOWN).forGetter(DiskLabel::clientSide),
 			SIDE_CODEC.optionalFieldOf("server", SideSupport.UNKNOWN).forGetter(DiskLabel::serverSide),
-			Codec.string(1, 64).optionalFieldOf("version").forGetter(DiskLabel::pinnedVersion)
+			Codec.string(1, 64).optionalFieldOf("version").forGetter(DiskLabel::pinnedVersion),
+			Codec.string(1, 64).optionalFieldOf("version_name").forGetter(DiskLabel::pinnedName)
 	).apply(i, DiskLabel::new));
 
 	public static final StreamCodec<ByteBuf, DiskLabel> STREAM_CODEC = ByteBufCodecs.fromCodec(CODEC);
@@ -78,7 +81,14 @@ public record DiskLabel(
 				project.color(),
 				project.clientSide(),
 				project.serverSide(),
+				Optional.empty(),
 				Optional.empty());
+	}
+
+	/** The same disk, locked to one version of its project. */
+	public DiskLabel pinnedTo(String versionId, String versionName) {
+		return new DiskLabel(projectId, slug, title, author, type, loaders, iconUrl, color, clientSide, serverSide,
+				Optional.of(versionId), Optional.of(clip(versionName, 64)).filter(name -> !name.isEmpty()));
 	}
 
 	/** True when players can join a server running this without installing it themselves. */

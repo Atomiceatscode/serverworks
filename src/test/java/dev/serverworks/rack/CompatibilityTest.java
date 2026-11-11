@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class CompatibilityTest {
 	private static DiskLabel disk(String title, SideSupport client) {
 		return new DiskLabel(title.toLowerCase(), title.toLowerCase(), title, "", ProjectType.MOD, List.of("fabric"),
-				Optional.empty(), -1, client, SideSupport.REQUIRED, Optional.empty());
+				Optional.empty(), -1, client, SideSupport.REQUIRED, Optional.empty(), Optional.empty());
 	}
 
 	@Test

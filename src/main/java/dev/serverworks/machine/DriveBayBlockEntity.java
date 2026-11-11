@@ -33,7 +33,9 @@ public final class DriveBayBlockEntity extends BaseContainerBlockEntity {
 	/** Written Mod Disks, written Pack Cartridges, and linked Link Cards. */
 	public static boolean isDisk(ItemStack stack) {
 		return ((stack.is(ModItems.MOD_DISK) || stack.is(ModItems.PACK_CARTRIDGE)) && stack.has(ModComponents.DISK_LABEL))
-				|| (stack.is(ModItems.LINK_CARD) && stack.has(ModComponents.LINK_TARGET));
+				|| (stack.is(ModItems.LINK_CARD) && stack.has(ModComponents.LINK_TARGET))
+				|| stack.is(ModItems.CONFIG_CARD)
+				|| (stack.is(ModItems.WORLD_DRIVE) && stack.has(ModComponents.WORLD_DRIVE));
 	}
 
 	public int diskCount() {

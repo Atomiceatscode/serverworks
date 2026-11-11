@@ -41,6 +41,18 @@ public final class ServerworksClient implements ClientModInitializer {
 				screen.setInstance(payload);
 			}
 		});
+		ClientPlayNetworking.registerGlobalReceiver(dev.serverworks.net.DiskUpdatesPayload.TYPE, (payload, context) -> {
+			if (context.client().gui.screen() instanceof ServerCoreScreen screen
+					&& screen.getMenu().containerId == payload.containerId()) {
+				screen.setUpdates(payload.updates());
+			}
+		});
+		ClientPlayNetworking.registerGlobalReceiver(dev.serverworks.net.BackupsPayload.TYPE, (payload, context) -> {
+			if (context.client().gui.screen() instanceof ServerCoreScreen screen
+					&& screen.getMenu().containerId == payload.containerId()) {
+				screen.setBackups(payload.backups(), payload.busy());
+			}
+		});
 		ClientPlayNetworking.registerGlobalReceiver(SelectResultPayload.TYPE, (payload, context) -> {
 			if (context.client().gui.screen() instanceof DiskWriterScreen screen) {
 				screen.onSelectResult(payload);
@@ -52,6 +64,10 @@ public final class ServerworksClient implements ClientModInitializer {
 			Trips.onJoin();
 			dev.serverworks.client.trip.ReturnKey.announceArrival(client);
 		}));
+		dev.serverworks.ClientHooks.editConfigCard = hand -> net.minecraft.client.Minecraft.getInstance().gui.setScreen(
+				new dev.serverworks.client.screen.ConfigCardScreen(hand, net.minecraft.client.Minecraft.getInstance().player.getItemInHand(hand)));
+		dev.serverworks.ClientHooks.editWorldDrive = hand -> net.minecraft.client.Minecraft.getInstance().gui.setScreen(
+				new dev.serverworks.client.screen.WorldDriveScreen(hand, net.minecraft.client.Minecraft.getInstance().player.getItemInHand(hand)));
 		TripButtons.register();
 		dev.serverworks.client.trip.ReturnKey.register();
 		dev.serverworks.ClientHooks.openManual = () -> net.minecraft.client.Minecraft.getInstance().gui

@@ -29,6 +29,9 @@ public record RackActionPayload(int containerId, Action action) implements Custo
 		START,
 		STOP,
 		ACCEPT_EULA,
-		EXPORT_PACK
+		EXPORT_PACK,
+		TOGGLE_REDSTONE,
+		UPDATE_DISKS,
+		BACKUP_NOW
 	}
 }

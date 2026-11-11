@@ -51,6 +51,78 @@ public final class RackControl {
 		}
 	}
 
+	/** Lets a redstone signal start and stop this rack, or stops it doing so. Operators only. */
+	public static @Nullable String setRedstoneControl(ServerCoreBlockEntity core, ServerPlayer player, boolean on) {
+		if (!canControl(player)) {
+			return "serverworks.notice.not_allowed";
+		}
+		core.setRedstoneControl(on);
+		return null;
+	}
+
+	/**
+	 * A redstone signal changed at a core with redstone control on: power starts the rack,
+	 * losing power stops it. An operator turned redstone control on, so this acts for them.
+	 */
+	static void redstone(ServerCoreBlockEntity core, boolean powered) {
+		if (powered) {
+			String refused = launchAny(core, null);
+			if (refused != null) {
+				Serverworks.LOGGER.info("Redstone could not start the rack at {}: {}", core.getBlockPos().toShortString(), refused);
+			}
+			return;
+		}
+		ServerInstance instance = Serverworks.host().instances().peek(core.rackId());
+		if (instance != null && instance.snapshot().state().active()) {
+			instance.stop();
+		}
+	}
+
+	/**
+	 * Brings the rack's disks up to date: pinned disks are re-pinned to the newest compatible
+	 * version, and a running server restarts so unpinned disks get theirs too.
+	 */
+	public static @Nullable String updateDisks(ServerCoreBlockEntity core, ServerPlayer player) {
+		if (!canControl(player)) {
+			return "serverworks.notice.not_allowed";
+		}
+		RackScan scan = core.lastScan();
+		if (scan == null || !scan.formed()) {
+			return "serverworks.notice.not_formed";
+		}
+		dev.serverworks.rack.Platform platform = scan.structure().platform();
+		List<String> pinned = core.disks(scan.structure()).stream()
+				.filter(d -> d.pinnedVersion().isPresent()).map(DiskLabel::projectId).distinct().toList();
+		MinecraftServer server = player.level().getServer();
+		java.util.concurrent.CompletableFuture.supplyAsync(() -> {
+			java.util.Map<String, dev.serverworks.catalog.model.ProjectVersion> newest = new java.util.HashMap<>();
+			for (String projectId : pinned) {
+				try {
+					newest.put(projectId, DiskUpdates.newest(platform, projectId));
+				} catch (dev.serverworks.host.PrepareException | RuntimeException e) {
+					Serverworks.LOGGER.info("Could not find a newer version of {}: {}", projectId, e.getMessage());
+				}
+			}
+			return newest;
+		}, DiskUpdates.executor()).thenAccept(newest -> server.execute(() -> {
+			if (core.isRemoved()) {
+				return;
+			}
+			core.repin(newest);
+			DiskUpdates.forget(core.rackId());
+			ServerInstance instance = Serverworks.host().instances().peek(core.rackId());
+			if (instance != null && instance.snapshot().state().active()) {
+				core.restart();
+			}
+		}));
+		return "serverworks.notice.updating";
+	}
+
+	/** Starts a rack again after an update stopped it; acts for whoever asked for the update. */
+	static @Nullable String restart(ServerCoreBlockEntity core) {
+		return launchAny(core, null);
+	}
+
 	/** Starts the rack's server. Returns a notice key when refused, else null. */
 	public static @Nullable String start(ServerCoreBlockEntity core, ServerPlayer player) {
 		if (!canControl(player)) {
@@ -76,7 +148,7 @@ public final class RackControl {
 	}
 
 	/** Starts a rack: a proxy brings up the racks it links to first, anything else just starts. */
-	private static @Nullable String launchAny(ServerCoreBlockEntity core, ServerPlayer player) {
+	private static @Nullable String launchAny(ServerCoreBlockEntity core, @Nullable ServerPlayer player) {
 		core.rescan();
 		RackScan scan = core.lastScan();
 		if (scan != null && scan.formed() && scan.structure().platform().group() == dev.serverworks.rack.Platform.Group.PROXY) {
@@ -85,7 +157,7 @@ public final class RackControl {
 		return launch(core, player, null, null);
 	}
 
-	private static @Nullable String launchProxy(ServerCoreBlockEntity proxyCore, ServerPlayer player, RackStructure rack) {
+	private static @Nullable String launchProxy(ServerCoreBlockEntity proxyCore, @Nullable ServerPlayer player, RackStructure rack) {
 		HostRuntime host = Serverworks.host();
 		if (Providers.get(rack.platform()) == null) {
 			return Providers.unsupportedReason(rack.platform());
@@ -141,13 +213,13 @@ public final class RackControl {
 			}
 		}
 		String refused = launch(proxyCore, player, null, new dev.serverworks.host.ProxyRole.Proxy(mode, secret, targets));
-		if (refused == null) {
+		if (refused == null && player != null) {
 			dev.serverworks.ModAdvancements.award(player, dev.serverworks.ModAdvancements.PROXY);
 		}
 		return refused;
 	}
 
-	private static @Nullable String launch(ServerCoreBlockEntity core, ServerPlayer player,
+	private static @Nullable String launch(ServerCoreBlockEntity core, @Nullable ServerPlayer player,
 			dev.serverworks.host.ProxyRole.@Nullable Backend asBackend, dev.serverworks.host.ProxyRole.@Nullable Proxy asProxy) {
 		HostRuntime host = Serverworks.host();
 		if (!host.eulaAccepted()) {
@@ -163,6 +235,7 @@ public final class RackControl {
 			return Providers.unsupportedReason(rack.platform());
 		}
 		List<DiskLabel> disks = core.disks(rack);
+		dev.serverworks.item.ServerSettings settings = core.configCard(rack);
 		List<ContentResolver.Wanted> wanted = new ArrayList<>();
 		long cartridges = disks.stream().filter(d -> d.type() == dev.serverworks.catalog.model.ProjectType.MODPACK).count();
 		if (cartridges > 1) {
@@ -189,7 +262,7 @@ public final class RackControl {
 			return "serverworks.notice.no_port";
 		}
 
-		MinecraftServer server = player.level().getServer();
+		MinecraftServer server = ((net.minecraft.server.level.ServerLevel) core.getLevel()).getServer();
 		LaunchRequest request = new LaunchRequest(
 				core.rackId(),
 				rack.platform(),
@@ -204,13 +277,17 @@ public final class RackControl {
 				"A Serverworks rack",
 				wanted,
 				asBackend,
-				asProxy);
+				asProxy,
+				settings == null ? java.util.Map.of() : settings.properties(),
+				WorldDrives.plan(server, core.worldDrive(rack)));
+		core.setPendingRules(settings == null ? List.of() : settings.gameRuleCommands());
 		Deployment deployment = new Deployment(host.root(), host.fetcher(),
 				new ContentResolver(new ModrinthCatalog(Serverworks.catalog())), request, HostRuntime.currentJava(),
 				HostRuntime.currentJavaVersion());
 		instance.start(port, deployment);
 		host.setLink(core.rackId(), asBackend);
-		Serverworks.LOGGER.info("{} started the {} rack server at {} on port {}", player.getGameProfile().name(),
+		Serverworks.LOGGER.info("{} started the {} rack server at {} on port {}",
+				player == null ? "A redstone signal" : player.getGameProfile().name(),
 				rack.platform().id(), core.getBlockPos().toShortString(), port);
 		return null;
 	}

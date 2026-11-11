@@ -55,6 +55,7 @@ public final class ServerCoreScreen extends AbstractContainerScreen<ServerCoreMe
 	private static final int RIGHT_X = 122;
 	private static final int DISKS_LABEL_Y = 97;
 	private static final int GRID_X = 8;
+	private static final int UPDATE_ARROW = 0xFF63E08A;
 	private static final int GRID_Y = 108;
 	private static final int GRID_COLUMNS = 12;
 	private static final int GRID_ROWS = 3;
@@ -101,12 +102,24 @@ public final class ServerCoreScreen extends AbstractContainerScreen<ServerCoreMe
 	private long noticeUntil;
 
 	private boolean consoleTab;
+	private boolean backupsTab;
+	private @Nullable Button backupsTabButton;
+	private @Nullable Button backupNowButton;
+	private final List<Button> restoreButtons = new ArrayList<>();
+	private List<dev.serverworks.host.Backups.Backup> backups = List.of();
+	private boolean backupBusy;
+	private static final int BACKUP_ROWS = 7;
+	private static final int BACKUP_ROW_H = 14;
 	private boolean eulaPanel;
 	private @Nullable Button rackTabButton;
 	private @Nullable Button consoleTabButton;
 	private @Nullable Button powerButton;
 	private @Nullable EditBox commandBox;
 	private @Nullable Button packButton;
+	private @Nullable Button redstoneButton;
+	private @Nullable Button updateButton;
+	/** Newer versions for this rack's disks, by project id. */
+	private final java.util.Map<String, dev.serverworks.net.DiskUpdatesPayload.Update> updates = new java.util.HashMap<>();
 	private @Nullable Button eulaRead;
 	private @Nullable Button eulaAgree;
 	private @Nullable Button eulaCancel;
@@ -120,9 +133,20 @@ public final class ServerCoreScreen extends AbstractContainerScreen<ServerCoreMe
 		super.init();
 		String typed = commandBox == null ? "" : commandBox.getValue();
 		rackTabButton = addRenderableWidget(Button.builder(Component.translatable("serverworks.server_core.tab.rack"),
-				button -> setConsoleTab(false)).bounds(leftPos + 128, topPos + 3, 46, 14).build());
+				button -> setTab(0)).bounds(leftPos + 80, topPos + 3, 46, 14).build());
 		consoleTabButton = addRenderableWidget(Button.builder(Component.translatable("serverworks.server_core.tab.console"),
-				button -> setConsoleTab(true)).bounds(leftPos + 176, topPos + 3, 46, 14).build());
+				button -> setTab(1)).bounds(leftPos + 128, topPos + 3, 46, 14).build());
+		backupsTabButton = addRenderableWidget(Button.builder(Component.translatable("serverworks.server_core.tab.backups"),
+				button -> setTab(2)).bounds(leftPos + 176, topPos + 3, 46, 14).build());
+		backupNowButton = addRenderableWidget(Button.builder(Component.translatable("serverworks.server_core.backup_now"),
+				button -> send(RackActionPayload.Action.BACKUP_NOW)).bounds(leftPos + 132, topPos + 166, 90, 16).build());
+		restoreButtons.clear();
+		for (int i = 0; i < BACKUP_ROWS; i++) {
+			int row = i;
+			restoreButtons.add(addRenderableWidget(Button.builder(Component.translatable("serverworks.server_core.restore"),
+					button -> restore(row)).bounds(leftPos + PANEL_X1 - 52, topPos + PANEL_Y0 + 14 + i * BACKUP_ROW_H, 48, 12)
+					.build()));
+		}
 		powerButton = addRenderableWidget(Button.builder(Component.translatable("serverworks.server_core.start"),
 				button -> onPower()).bounds(leftPos + 8, topPos + 166, 90, 16).build());
 		commandBox = new EditBox(font, leftPos + 104, topPos + 167, 118, 14, Component.translatable("serverworks.server_core.console.hint"));
@@ -134,6 +158,11 @@ public final class ServerCoreScreen extends AbstractContainerScreen<ServerCoreMe
 				button -> send(RackActionPayload.Action.EXPORT_PACK)).bounds(leftPos + 132, topPos + 166, 90, 16)
 				.tooltip(Tooltip.create(Component.translatable("serverworks.server_core.pack.tooltip"))).build());
 
+		updateButton = addRenderableWidget(Button.builder(Component.empty(),
+				button -> send(RackActionPayload.Action.UPDATE_DISKS)).bounds(leftPos + 162, topPos + 94, 60, 13).build());
+		redstoneButton = addRenderableWidget(Button.builder(Component.empty(),
+				button -> send(RackActionPayload.Action.TOGGLE_REDSTONE)).bounds(leftPos + 104, topPos + 166, 22, 16).build());
+
 		int panelCentre = leftPos + (PANEL_X0 + PANEL_X1) / 2;
 		eulaRead = addRenderableWidget(Button.builder(Component.translatable("serverworks.eula.read"),
 				button -> Blaze3D.openUri(CommonLinks.EULA)).bounds(panelCentre - 105, topPos + 140, 66, 16).build());
@@ -141,6 +170,43 @@ public final class ServerCoreScreen extends AbstractContainerScreen<ServerCoreMe
 		eulaCancel = addRenderableWidget(Button.builder(Component.translatable("serverworks.eula.cancel"),
 				button -> eulaPanel = false).bounds(panelCentre + 39, topPos + 140, 66, 16).build());
 		refreshWidgets();
+	}
+
+	/** 0 is the rack, 1 the console, 2 the backups. */
+	private void setTab(int tab) {
+		backupsTab = tab == 2;
+		setConsoleTab(tab == 1);
+	}
+
+	private boolean rackTab() {
+		return !consoleTab && !backupsTab;
+	}
+
+	private void restore(int row) {
+		if (row < backups.size()) {
+			ClientPlayNetworking.send(new dev.serverworks.net.RestoreBackupPayload(menu.containerId, backups.get(row).name()));
+		}
+	}
+
+	/** Called when the server sends the rack's backups. */
+	public void setBackups(List<dev.serverworks.host.Backups.Backup> list, boolean busy) {
+		backups = List.copyOf(list);
+		backupBusy = busy;
+		refreshWidgets();
+	}
+
+	/** The Back Up Now button, as pressed by a player. */
+	public void pressBackup() {
+		send(RackActionPayload.Action.BACKUP_NOW);
+	}
+
+	public int backupCount() {
+		return backups.size();
+	}
+
+	/** Opens a tab, for tests: 0 rack, 1 console, 2 backups. */
+	public void showTab(int tab) {
+		setTab(tab);
 	}
 
 	private void setConsoleTab(boolean console) {
@@ -173,7 +239,7 @@ public final class ServerCoreScreen extends AbstractContainerScreen<ServerCoreMe
 	}
 
 	public void showConsole(boolean console) {
-		setConsoleTab(console);
+		setTab(console ? 1 : 0);
 	}
 
 	private void onPower() {
@@ -189,6 +255,25 @@ public final class ServerCoreScreen extends AbstractContainerScreen<ServerCoreMe
 
 	private void send(RackActionPayload.Action action) {
 		ClientPlayNetworking.send(new RackActionPayload(menu.containerId, action));
+	}
+
+	/** Called when the server finds which disks have newer versions. */
+	public void setUpdates(List<dev.serverworks.net.DiskUpdatesPayload.Update> found) {
+		updates.clear();
+		for (var update : found) {
+			updates.put(update.projectId(), update);
+		}
+		refreshWidgets();
+	}
+
+	/** The Update button, as pressed by a player. */
+	public void pressUpdate() {
+		send(RackActionPayload.Action.UPDATE_DISKS);
+	}
+
+	/** How many disks have an update, for tests. */
+	public int updateCount() {
+		return updates.size();
 	}
 
 	/** Called when the server sends a fresh snapshot of the rack's structure. */
@@ -293,14 +378,42 @@ public final class ServerCoreScreen extends AbstractContainerScreen<ServerCoreMe
 				? "serverworks.server_core.console.hint.tooltip" : "serverworks.server_core.console.not_running.tooltip")));
 		if (packButton != null) {
 			boolean modPlatform = status.formed() && status.platform().group() == dev.serverworks.rack.Platform.Group.MOD;
-			packButton.visible = !consoleTab && !eulaPanel && modPlatform;
+			packButton.visible = rackTab() && !eulaPanel && modPlatform;
+			if (updateButton != null) {
+				updateButton.visible = rackTab() && !eulaPanel && status.formed() && !updates.isEmpty();
+				updateButton.active = instance != null && instance.canControl();
+				updateButton.setMessage(Component.translatable("serverworks.server_core.update", updates.size()));
+				boolean restarts = instance != null && instance.state().active();
+				updateButton.setTooltip(Tooltip.create(Component.translatable(restarts
+						? "serverworks.server_core.update.restart" : "serverworks.server_core.update.tooltip")));
+			}
+			if (redstoneButton != null) {
+				redstoneButton.visible = rackTab() && !eulaPanel && status.formed();
+				redstoneButton.active = instance != null && instance.canControl();
+				redstoneButton.setTooltip(Tooltip.create(Component.translatable(status.redstoneControl()
+						? "serverworks.server_core.redstone.on" : "serverworks.server_core.redstone.off")));
+			}
 			packButton.active = instance != null && instance.packAvailable();
 			packButton.setTooltip(Tooltip.create(Component.translatable(packButton.active
 					? "serverworks.server_core.pack.tooltip" : "serverworks.server_core.pack.unavailable")));
 		}
-		if (rackTabButton != null && consoleTabButton != null) {
-			rackTabButton.active = consoleTab;
+		boolean controls = instance != null && instance.canControl();
+		boolean stopped = instance == null || !instance.state().active();
+		if (backupNowButton != null) {
+			backupNowButton.visible = backupsTab && !eulaPanel;
+			backupNowButton.active = controls && !backupBusy && status.formed();
+		}
+		for (int i = 0; i < restoreButtons.size(); i++) {
+			Button restore = restoreButtons.get(i);
+			restore.visible = backupsTab && !eulaPanel && i < backups.size();
+			restore.active = controls && stopped && !backupBusy;
+			restore.setTooltip(Tooltip.create(Component.translatable(stopped
+					? "serverworks.server_core.restore.tooltip" : "serverworks.server_core.restore.stop_first")));
+		}
+		if (rackTabButton != null && consoleTabButton != null && backupsTabButton != null) {
+			rackTabButton.active = !rackTab();
 			consoleTabButton.active = !consoleTab;
+			backupsTabButton.active = !backupsTab;
 		}
 		if (eulaRead != null && eulaAgree != null && eulaCancel != null) {
 			eulaRead.visible = eulaPanel;
@@ -330,6 +443,8 @@ public final class ServerCoreScreen extends AbstractContainerScreen<ServerCoreMe
 			extractEula(graphics);
 		} else if (consoleTab) {
 			extractConsole(graphics);
+		} else if (backupsTab) {
+			extractBackups(graphics);
 		} else {
 			extractDisks(graphics);
 		}
@@ -459,6 +574,14 @@ public final class ServerCoreScreen extends AbstractContainerScreen<ServerCoreMe
 			graphics.item(diskStacks.get(i), x, y);
 			if (!status.accepts(status.disks().get(i))) {
 				graphics.fill(x, y, x + 16, y + 16, INCOMPATIBLE_TINT);
+			} else if (updates.containsKey(status.disks().get(i).projectId())) {
+				// A small green arrow in the corner: a newer version is available.
+				int ax = x + 11;
+				int ay = y;
+				graphics.fill(ax + 2, ay, ax + 3, ay + 1, UPDATE_ARROW);
+				graphics.fill(ax + 1, ay + 1, ax + 4, ay + 2, UPDATE_ARROW);
+				graphics.fill(ax, ay + 2, ax + 5, ay + 3, UPDATE_ARROW);
+				graphics.fill(ax + 1, ay + 3, ax + 4, ay + 5, UPDATE_ARROW);
 			}
 		}
 		if (received && status.formed() && diskStacks.isEmpty()) {
@@ -470,6 +593,37 @@ public final class ServerCoreScreen extends AbstractContainerScreen<ServerCoreMe
 
 	private int visibleConsoleLines() {
 		return (PANEL_Y1 - PANEL_Y0 - 6) / CONSOLE_LINE_H;
+	}
+
+	private void extractBackups(GuiGraphicsExtractor graphics) {
+		int x0 = leftPos + PANEL_X0;
+		int y0 = topPos + PANEL_Y0;
+		int x1 = leftPos + PANEL_X1;
+		int y1 = topPos + PANEL_Y1;
+		graphics.fill(x0, y0, x1, y1, CONSOLE_BG);
+		Component heading = backupBusy ? Component.translatable("serverworks.server_core.backups.busy")
+				: Component.translatable("serverworks.server_core.backups.heading", backups.size());
+		graphics.text(font, heading, x0 + 5, y0 + 3, backupBusy ? TEXT_BUSY : TEXT_DIM, false);
+		if (backups.isEmpty()) {
+			String key = instance != null && !instance.canControl() ? "serverworks.server_core.backups.operators"
+					: "serverworks.server_core.backups.empty";
+			List<FormattedCharSequence> lines = font.split(Component.translatable(key), x1 - x0 - 20);
+			int y = (y0 + y1) / 2 - lines.size() * 5;
+			for (FormattedCharSequence line : lines) {
+				graphics.centeredText(font, line, (x0 + x1) / 2, y, TEXT_DIM);
+				y += 10;
+			}
+			return;
+		}
+		java.time.format.DateTimeFormatter format = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+		for (int i = 0; i < Math.min(BACKUP_ROWS, backups.size()); i++) {
+			var backup = backups.get(i);
+			int y = y0 + 14 + i * BACKUP_ROW_H;
+			String when = java.time.Instant.ofEpochMilli(backup.modified()).atZone(java.time.ZoneId.systemDefault()).format(format);
+			graphics.text(font, when, x0 + 5, y + 2, TEXT_LIGHT, false);
+			String size = String.format(java.util.Locale.ROOT, "%.1f MB", backup.size() / 1_048_576.0);
+			graphics.text(font, size, x0 + 100, y + 2, TEXT_DIM, false);
+		}
 	}
 
 	private void extractConsole(GuiGraphicsExtractor graphics) {
@@ -546,11 +700,18 @@ public final class ServerCoreScreen extends AbstractContainerScreen<ServerCoreMe
 
 	@Override
 	protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+		if (redstoneButton != null && redstoneButton.visible) {
+			// Lit redstone dust when redstone control is on, a grey torch-less dust when off.
+			int x = redstoneButton.getX() - leftPos + 3;
+			int y = redstoneButton.getY() - topPos;
+			graphics.item(new ItemStack(status.redstoneControl() ? net.minecraft.world.item.Items.REDSTONE_TORCH
+					: net.minecraft.world.item.Items.REDSTONE), x, y);
+		}
 		graphics.text(font, title, titleLabelX, titleLabelY, TEXT, false);
 		// The selected tab's button is disabled (you are already there), so mark it as the current one.
-		int tabX = consoleTab ? 176 : 128;
+		int tabX = backupsTab ? 176 : consoleTab ? 128 : 80;
 		graphics.fill(tabX + 3, 15, tabX + 43, 17, TAB_SELECTED);
-		if (consoleTab || eulaPanel) {
+		if (!rackTab() || eulaPanel) {
 			return;
 		}
 		if (!received || !status.formed()) {
@@ -611,7 +772,7 @@ public final class ServerCoreScreen extends AbstractContainerScreen<ServerCoreMe
 			graphics.setTooltipForNextFrame(font, font.split(Component.literal(instance.detail()), 220), mouseX, mouseY);
 			return;
 		}
-		if (consoleTab || eulaPanel) {
+		if (!rackTab() || eulaPanel) {
 			return;
 		}
 		int index = diskAt(mouseX, mouseY);
@@ -623,6 +784,11 @@ public final class ServerCoreScreen extends AbstractContainerScreen<ServerCoreMe
 		if (!status.accepts(status.disks().get(index)) && status.platform() != null) {
 			lines.add(Component.translatable("serverworks.server_core.disk_incompatible",
 					Component.translatable(status.platform().translationKey())).withStyle(ChatFormatting.RED));
+		}
+		var update = updates.get(status.disks().get(index).projectId());
+		if (update != null) {
+			lines.add(Component.translatable("serverworks.server_core.update.line", update.from(), update.to())
+					.withStyle(ChatFormatting.GREEN));
 		}
 		graphics.setComponentTooltipForNextFrame(font, lines, mouseX, mouseY);
 	}
@@ -655,6 +821,9 @@ public final class ServerCoreScreen extends AbstractContainerScreen<ServerCoreMe
 			consoleScroll = Mth.clamp(consoleScroll + (int) Math.signum(scrollY) * 3, 0,
 					Math.max(0, console.size() - visibleConsoleLines()));
 			return true;
+		}
+		if (backupsTab) {
+			return super.mouseScrolled(x, y, scrollX, scrollY);
 		}
 		if (maxScrollRow() > 0) {
 			scrollRow = Mth.clamp(scrollRow - (int) Math.signum(scrollY), 0, maxScrollRow());
@@ -693,8 +862,8 @@ public final class ServerCoreScreen extends AbstractContainerScreen<ServerCoreMe
 
 	@Override
 	public void resize(int width, int height) {
-		boolean tab = consoleTab;
+		int tab = backupsTab ? 2 : consoleTab ? 1 : 0;
 		init(width, height);
-		setConsoleTab(tab);
+		setTab(tab);
 	}
 }

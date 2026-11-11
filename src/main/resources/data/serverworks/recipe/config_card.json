@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "serverworks:blank_disk",
+    "minecraft:paper",
+    "minecraft:comparator"
+  ],
+  "result": {
+    "id": "serverworks:config_card"
+  }
+}

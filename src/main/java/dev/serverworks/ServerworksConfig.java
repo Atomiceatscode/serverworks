@@ -30,6 +30,10 @@ public final class ServerworksConfig {
 	 * a rack runs downloaded code on this machine, so think before turning it off.
 	 */
 	public boolean operatorsOnly = true;
+	/** Minutes between automatic backups of each running rack's world; 0 turns them off. */
+	public int backupMinutes = 0;
+	/** How many backups to keep per rack; older ones are deleted. */
+	public int keepBackups = 10;
 	/** On a dedicated server, the address players use to reach it, shown with each rack's port. */
 	public String publicAddress = "";
 
@@ -73,6 +77,8 @@ public final class ServerworksConfig {
 	public void clamp() {
 		idleMinutes = Math.clamp(idleMinutes, 0, 24 * 60);
 		maxRunning = Math.clamp(maxRunning, 1, 32);
+		backupMinutes = Math.clamp(backupMinutes, 0, 7 * 24 * 60);
+		keepBackups = Math.clamp(keepBackups, 1, 100);
 		firstPort = Math.clamp(firstPort, 1024, 65535);
 		lastPort = Math.clamp(lastPort, firstPort, 65535);
 		if (publicAddress == null || !publicAddress.matches("[A-Za-z0-9.:\\-\\[\\]]{0,253}")) {

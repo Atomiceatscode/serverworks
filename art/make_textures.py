@@ -154,6 +154,40 @@ def link_card():
     return c
 
 
+def config_card():
+    """An amber settings card with three sliders and their knobs."""
+    c = Canvas(16, 16)
+    body = rgba("#c9852c")
+    c.rect(2, 2, 13, 13, shade(body, -55))
+    c.rect(3, 3, 12, 12, body)
+    c.rect(3, 3, 12, 3, shade(body, 45))
+    track = rgba("#5a3a12")
+    knob = rgba("#f4f1ea")
+    for row, pos in ((5, 9), (8, 5), (11, 10)):
+        c.rect(4, row, 11, row, track)
+        c.rect(pos, row - 1, pos, row + 1, knob)
+        c.set(pos, row + 1, shade(knob, -40))
+    c.set(12, 12, shade(body, -30))
+    return c
+
+
+def world_drive():
+    """A green drive whose label window shows a small round world."""
+    c = disk(rgba("#2f8f4a"), rgba("#57b86f"), rgba("#1f6233"), rgba("#d9efdf"), rgba("#9fcfac"), False)
+    ocean = rgba("#3a7be0")
+    land = rgba("#5fbf4a")
+    c.rect(3, 2, 12, 11, rgba("#d9efdf"))
+    globe = ["..oooo..", ".oollloo"[:8], "ollllooo", "oollllll", "ooolloll", "oooooool", ".oooooo.", "..oooo.."]
+    for y, row in enumerate(globe):
+        for x, ch in enumerate(row):
+            if ch == "o":
+                c.set(4 + x, 3 + y, ocean)
+            elif ch == "l":
+                c.set(4 + x, 3 + y, land)
+    c.set(5, 4, rgba("#bfe0ff"))
+    return c
+
+
 def manual():
     """A slate-blue binder with a rack emblem and a bookmark."""
     c = Canvas(16, 16)
@@ -181,6 +215,8 @@ def make_items():
         .save("item/mod_disk.png")
     cartridge().save("item/pack_cartridge.png")
     link_card().save("item/link_card.png")
+    config_card().save("item/config_card.png")
+    world_drive().save("item/world_drive.png")
     manual().save("item/operators_manual.png")
 
 

@@ -37,6 +37,25 @@ public final class ServerCoreBlock extends RackComponentBlock implements EntityB
 		return (BlockEntityTicker<T>) (BlockEntityTicker<ServerCoreBlockEntity>) ServerCoreBlockEntity::serverTick;
 	}
 
+	@Override
+	protected void neighborChanged(BlockState state, Level level, BlockPos pos, net.minecraft.world.level.block.Block block,
+			net.minecraft.world.level.redstone.@Nullable Orientation orientation, boolean movedByPiston) {
+		super.neighborChanged(state, level, pos, block, orientation, movedByPiston);
+		if (level instanceof ServerLevel && level.getBlockEntity(pos) instanceof ServerCoreBlockEntity core) {
+			core.neighborSignal(level.hasNeighborSignal(pos));
+		}
+	}
+
+	@Override
+	protected boolean hasAnalogOutputSignal(BlockState state) {
+		return true;
+	}
+
+	@Override
+	protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos, net.minecraft.core.Direction direction) {
+		return level.getBlockEntity(pos) instanceof ServerCoreBlockEntity core ? core.comparatorSignal() : 0;
+	}
+
 	/** The core always opens, formed or not, because it is where you learn what is missing. */
 	@Override
 	protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
