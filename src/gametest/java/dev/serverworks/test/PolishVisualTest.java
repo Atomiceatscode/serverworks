@@ -100,6 +100,8 @@ public final class PolishVisualTest implements FabricClientGameTest {
 			context.takeScreenshot("polish_2_formed_with_jade");
 
 			context.setScreen(ManualScreen::new);
+			// Opening a screen centres the mouse; move it off the pages so no tooltip covers them.
+			context.getInput().setCursorPos(0, 0);
 			context.waitTicks(5);
 			context.takeScreenshot("polish_3_manual_contents");
 			context.runOnClient(client -> ((ManualScreen) client.gui.screen()).showPage(2));

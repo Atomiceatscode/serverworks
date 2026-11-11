@@ -5,6 +5,7 @@ import dev.serverworks.catalog.model.ProjectType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 /**
  * A catalog search. Empty lists mean "no restriction" for that filter.
@@ -13,6 +14,7 @@ import java.util.Locale;
  * @param gameVersions   match projects supporting any of these Minecraft versions
  * @param categories     match projects in all of these content categories
  * @param serverCapable  when true, hide projects that cannot run on a server at all
+ * @param author         only projects by this Modrinth username, or empty for anyone
  */
 public record SearchQuery(
 		String text,
@@ -23,12 +25,19 @@ public record SearchQuery(
 		boolean serverCapable,
 		Sort sort,
 		int offset,
-		int limit) {
+		int limit,
+		String author) {
 
 	public static final int MAX_LIMIT = 100;
+	/** Modrinth usernames: letters, digits, underscores and hyphens. */
+	private static final Pattern USERNAME = Pattern.compile("[A-Za-z0-9_-]{1,39}");
 
 	public SearchQuery {
 		text = text == null ? "" : text.strip();
+		author = author == null ? "" : author.strip();
+		if (!author.isEmpty() && !USERNAME.matcher(author).matches()) {
+			throw new IllegalArgumentException("Not a Modrinth username: " + author);
+		}
 		types = List.copyOf(types);
 		loaders = List.copyOf(loaders);
 		gameVersions = List.copyOf(gameVersions);
@@ -42,35 +51,59 @@ public record SearchQuery(
 	}
 
 	public static SearchQuery of(String text) {
-		return new SearchQuery(text, List.of(), List.of(), List.of(), List.of(), false, Sort.RELEVANCE, 0, 20);
+		return new SearchQuery(text, List.of(), List.of(), List.of(), List.of(), false, Sort.RELEVANCE, 0, 20, "");
+	}
+
+	/**
+	 * Reads what a player typed into the search box. A word starting with {@code @}, or
+	 * {@code author:}, names an author; the other words are searched for as usual. For
+	 * example {@code @jellysquid3 lithium}. Anything that is not a valid username stays text.
+	 */
+	public static SearchQuery parse(String input) {
+		String author = "";
+		List<String> words = new ArrayList<>();
+		for (String word : (input == null ? "" : input).strip().split("\\s+")) {
+			String name = word.startsWith("@") ? word.substring(1)
+					: word.regionMatches(true, 0, "author:", 0, 7) ? word.substring(7) : null;
+			if (name != null && author.isEmpty() && USERNAME.matcher(name).matches()) {
+				author = name;
+			} else if (!word.isEmpty()) {
+				words.add(word);
+			}
+		}
+		return of(String.join(" ", words)).withAuthor(author);
+	}
+
+	public SearchQuery withAuthor(String value) {
+		return new SearchQuery(text, types, loaders, gameVersions, categories, serverCapable, sort, offset, limit, value);
 	}
 
 	public SearchQuery withTypes(List<ProjectType> value) {
-		return new SearchQuery(text, value, loaders, gameVersions, categories, serverCapable, sort, offset, limit);
+		return new SearchQuery(text, value, loaders, gameVersions, categories, serverCapable, sort, offset, limit, author);
 	}
 
 	public SearchQuery withLoaders(List<String> value) {
-		return new SearchQuery(text, types, value, gameVersions, categories, serverCapable, sort, offset, limit);
+		return new SearchQuery(text, types, value, gameVersions, categories, serverCapable, sort, offset, limit, author);
 	}
 
 	public SearchQuery withGameVersions(List<String> value) {
-		return new SearchQuery(text, types, loaders, value, categories, serverCapable, sort, offset, limit);
+		return new SearchQuery(text, types, loaders, value, categories, serverCapable, sort, offset, limit, author);
 	}
 
 	public SearchQuery withCategories(List<String> value) {
-		return new SearchQuery(text, types, loaders, gameVersions, value, serverCapable, sort, offset, limit);
+		return new SearchQuery(text, types, loaders, gameVersions, value, serverCapable, sort, offset, limit, author);
 	}
 
 	public SearchQuery withServerCapable(boolean value) {
-		return new SearchQuery(text, types, loaders, gameVersions, categories, value, sort, offset, limit);
+		return new SearchQuery(text, types, loaders, gameVersions, categories, value, sort, offset, limit, author);
 	}
 
 	public SearchQuery withSort(Sort value) {
-		return new SearchQuery(text, types, loaders, gameVersions, categories, serverCapable, value, offset, limit);
+		return new SearchQuery(text, types, loaders, gameVersions, categories, serverCapable, value, offset, limit, author);
 	}
 
 	public SearchQuery withPage(int newOffset, int newLimit) {
-		return new SearchQuery(text, types, loaders, gameVersions, categories, serverCapable, sort, newOffset, newLimit);
+		return new SearchQuery(text, types, loaders, gameVersions, categories, serverCapable, sort, newOffset, newLimit, author);
 	}
 
 	/**
@@ -87,6 +120,9 @@ public record SearchQuery(
 		}
 		if (serverCapable) {
 			groups.add(List.of("server_side:required", "server_side:optional"));
+		}
+		if (!author.isEmpty()) {
+			groups.add(List.of("author:" + author));
 		}
 		if (groups.isEmpty()) {
 			return "";

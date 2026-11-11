@@ -246,6 +246,41 @@ class ModrinthClientTest {
 		assertThrows(IllegalArgumentException.class, () -> SearchQuery.of("x").withPage(0, 101));
 	}
 
+	@Test
+	void typedAuthorsAreParsedOutOfTheSearchText() {
+		SearchQuery query = SearchQuery.parse("@JellySquid3 lithium");
+		assertEquals("JellySquid3", query.author());
+		assertEquals("lithium", query.text());
+		assertEquals("jellysquid3", SearchQuery.parse("author:jellysquid3").author());
+		assertEquals("", SearchQuery.parse("author:jellysquid3").text());
+		// Not a username, so it stays ordinary text.
+		SearchQuery odd = SearchQuery.parse("@a/b sodium");
+		assertEquals("", odd.author());
+		assertEquals("@a/b sodium", odd.text());
+		assertEquals("", SearchQuery.parse("plain words").author());
+		assertTrue(SearchQuery.of("x").withAuthor("Someone").facets().contains("[\"author:Someone\"]"));
+		assertThrows(IllegalArgumentException.class, () -> SearchQuery.of("x").withAuthor("bad name"));
+	}
+
+	@Test
+	void authorSearchesUseTheUsernamesExactCapitalisation() {
+		FakeTransport transport = new FakeTransport()
+				.respond(200, "{\"id\":\"TEZXhE2U\",\"username\":\"jellysquid3\"}", PLENTY)
+				.respond(200, fixture("search_lithium.json"), PLENTY);
+		SearchResult result = client(transport).search(SearchQuery.parse("@JellySquid3")).join();
+		assertEquals("https://api.modrinth.com/v2/user/JellySquid3", transport.requests.getFirst().toString());
+		String sent = URLDecoder.decode(transport.requests.get(1).toString(), StandardCharsets.UTF_8);
+		assertTrue(sent.contains("[\"author:jellysquid3\"]"), sent);
+		assertFalse(result.hits().isEmpty());
+	}
+
+	@Test
+	void unknownAuthorsFailAsNotFound() {
+		FakeTransport transport = new FakeTransport().respond(404, "", PLENTY);
+		assertEquals(CatalogException.Kind.NOT_FOUND, failure(client(transport).search(SearchQuery.parse("@nobody_here"))).kind());
+		assertEquals(1, transport.requests.size(), "no search is sent for an author that does not exist");
+	}
+
 	private static ModrinthClient client(FakeTransport transport) {
 		return new ModrinthClient(ModrinthClient.DEFAULT_BASE, transport, "serverworks-test/1.0", () -> 0L,
 				new RecordingDelayer());

@@ -68,7 +68,21 @@ public final class ModrinthClient {
 		this.delayer = delayer;
 	}
 
+	/**
+	 * Searches the catalog. An author filter is first looked up, because Modrinth only
+	 * matches the username's exact capitalisation and players will not always type it.
+	 * Fails with {@link CatalogException.Kind#NOT_FOUND} when no such user exists.
+	 */
 	public CompletableFuture<SearchResult> search(SearchQuery query) {
+		if (query.author().isEmpty()) {
+			return searchExactly(query);
+		}
+		return get("user/" + pathSegment(query.author()), Map.of())
+				.thenApply(ModrinthJson::username)
+				.thenCompose(username -> searchExactly(query.withAuthor(username)));
+	}
+
+	private CompletableFuture<SearchResult> searchExactly(SearchQuery query) {
 		Map<String, String> params = new LinkedHashMap<>();
 		if (!query.text().isEmpty()) {
 			params.put("query", query.text());

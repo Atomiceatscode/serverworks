@@ -357,7 +357,7 @@ def language():
         "serverworks.platform_group.plugin": "Plugin platform",
         "serverworks.platform_group.proxy": "Proxy platform",
 
-        "serverworks.disk_writer.search": "Search the catalog...",
+        "serverworks.disk_writer.search": "Search, or @author...",
         "serverworks.disk_writer.type.all": "All",
         "serverworks.disk_writer.sort.relevance": "Relevant",
         "serverworks.disk_writer.sort.downloads": "Popular",
@@ -432,8 +432,10 @@ def language():
         "serverworks.server_core.join_port": "Listening on port %s",
         "serverworks.server_core.console.empty": "Nothing here yet. Start the server to see its output.",
         "serverworks.server_core.console.operators": "Only operators can see a rack's console.",
-        "serverworks.server_core.console.hint": "Type a command, press Enter",
-        "serverworks.server_core.console.not_running": "Start the server to send commands",
+        "serverworks.server_core.console.hint": "Type a command",
+        "serverworks.server_core.console.hint.tooltip": "Type a server command and press Enter, without the /",
+        "serverworks.server_core.console.not_running": "Server not running",
+        "serverworks.server_core.console.not_running.tooltip": "Start the server to send it commands",
         "serverworks.server_core.console.newer": "%s newer",
 
         "serverworks.instance.state.idle": "Ready",
@@ -616,7 +618,8 @@ MANUAL = {
                 "Every rack runs a real server on this computer, downloaded from the official sources and from "
                 "Modrinth, the catalog all the disks come from."),
     "disks": ("Disks and the Disk Writer",
-              "Craft Blank Disks, then put one in a Disk Writer. Search the catalog, click a project or drag it onto "
+              "Craft Blank Disks, then put one in a Disk Writer. Search the catalog (type @name, or click an author, "
+              "to see one author's projects), click a project or drag it onto "
               "the right-hand panel, and take the "
               "written disk from the output slot. It carries the project's name and icon.\n"
               "Write a modpack and you get a Pack Cartridge instead. Disks only name a project: the newest version "
@@ -681,6 +684,8 @@ def manual_text():
     lang["serverworks.manual.recipes.modules"] = "Platform Modules"
     lang["serverworks.manual.recipes.modules.body"] = "its platform's item:"
     lang["serverworks.manual.recipes.shapeless"] = "Any order"
+    lang["serverworks.disk_writer.by_author"] = "Click to see everything by %s"
+    lang["serverworks.disk_writer.error.no_author"] = "No Modrinth author has that name."
     lang["serverworks.trip.arrived"] = "You are on the rack's server. To go back to %s, press %s, or press Esc and choose Return."
     lang["key.serverworks.return"] = "Return from Rack Server"
     lang["key.category.serverworks.serverworks"] = "Serverworks"

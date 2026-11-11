@@ -177,6 +177,16 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 		return selected == null ? "" : selected.title();
 	}
 
+	/** Author of a result row, or an empty string; for tests. */
+	public String resultAuthor(int row) {
+		return row >= 0 && row < results.size() ? results.get(row).author() : "";
+	}
+
+	/** What the search box holds; for tests. */
+	public String searchText() {
+		return search == null ? "" : search.getValue();
+	}
+
 	/** Title of a result row, or an empty string; for tests. */
 	public String resultTitle(int row) {
 		return row >= 0 && row < results.size() ? results.get(row).title() : "";
@@ -212,7 +222,7 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 		int requested = ++generation;
 		loading = true;
 		ProjectType type = TYPE_FILTERS.get(typeIndex);
-		SearchQuery query = SearchQuery.of(lastSearchedText)
+		SearchQuery query = SearchQuery.parse(lastSearchedText)
 				.withTypes(type == null ? List.of() : List.of(type))
 				.withServerCapable(true)
 				.withSort(sort)
@@ -243,6 +253,10 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 		Throwable cause = error instanceof CompletionException && error.getCause() != null ? error.getCause() : error;
 		if (cause instanceof CatalogException catalog && catalog.kind() == CatalogException.Kind.RATE_LIMITED) {
 			return "serverworks.disk_writer.error.rate_limited";
+		}
+		if (cause instanceof CatalogException catalog && catalog.kind() == CatalogException.Kind.NOT_FOUND) {
+			// Searches only 404 when an @author does not exist.
+			return "serverworks.disk_writer.error.no_author";
 		}
 		return "serverworks.disk_writer.error.unavailable";
 	}
@@ -314,6 +328,12 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 			int textW = LIST_W - 30;
 			graphics.text(font, clip(project.title(), textW), textX, rowY + 3, TEXT_LIGHT, false);
 			graphics.text(font, clip(subtitle(project), textW), textX, rowY + 13, TEXT_DIM, false);
+			if (i == hovered && overAuthor(i, mouseX, mouseY)) {
+				// The author's name is a link to their other projects.
+				int nameW = Math.min(font.width(project.author()), textW);
+				graphics.text(font, clip(project.author(), textW), textX, rowY + 13, TEXT_LIGHT, false);
+				graphics.fill(textX, rowY + 22, textX + nameW, rowY + 23, TEXT_LIGHT);
+			}
 		}
 		graphics.disableScissor();
 
@@ -440,6 +460,10 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 			return;
 		}
 		ProjectSummary project = results.get(row);
+		if (overAuthor(row, mouseX, mouseY)) {
+			graphics.setTooltipForNextFrame(font, Component.translatable("serverworks.disk_writer.by_author", project.author()), mouseX, mouseY);
+			return;
+		}
 		List<Component> lines = new ArrayList<>();
 		lines.add(Component.literal(project.title()));
 		lines.add(Component.literal(subtitle(project)).withStyle(ChatFormatting.GRAY));
@@ -506,6 +530,28 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 		return row >= 0 && row < results.size() ? row : -1;
 	}
 
+	/** Whether the mouse is over the author's name at the start of a row's second line. */
+	private boolean overAuthor(int row, double mouseX, double mouseY) {
+		if (row < 0 || row >= results.size() || results.get(row).author().isEmpty()) {
+			return false;
+		}
+		int textX = leftPos + LIST_X + 26;
+		int rowY = topPos + LIST_Y + row * ROW_H - (int) scroll;
+		int nameW = Math.min(font.width(results.get(row).author()), LIST_W - 30);
+		return mouseX >= textX && mouseX < textX + nameW && mouseY >= rowY + 12 && mouseY < rowY + 22;
+	}
+
+	/** Lists everything by one author, as if the player had typed {@code @name}. */
+	private void searchAuthor(String author) {
+		if (search != null) {
+			search.setValue("@" + author);
+			search.moveCursorToEnd(false);
+		}
+		searchCountdown = -1;
+		startSearch();
+		minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+	}
+
 	/** The right-hand panel a dragged project can be dropped on. */
 	private boolean overDetail(double mouseX, double mouseY) {
 		int x = leftPos + DETAIL_X;
@@ -547,6 +593,10 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 				return true;
 			}
 			int row = rowAt(event.x(), event.y());
+			if (row >= 0 && overAuthor(row, event.x(), event.y())) {
+				searchAuthor(results.get(row).author());
+				return true;
+			}
 			if (row >= 0) {
 				// Pick straight away, so a click works even when a trackpad nudges the cursor;
 				// holding and moving carries the project over to the panel as well.

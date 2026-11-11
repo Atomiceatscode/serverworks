@@ -50,6 +50,15 @@ public final class ModrinthJson {
 				intOr(root, "total_hits", hits.size()));
 	}
 
+	/** The exact username from a {@code /user/<name>} answer. */
+	public static String username(String json) {
+		String name = stringOr(object(json), "username", "");
+		if (name.isEmpty()) {
+			throw new CatalogException(CatalogException.Kind.BAD_RESPONSE, "The catalog sent a user without a name");
+		}
+		return name;
+	}
+
 	public static ProjectSummary project(String json) {
 		return summary(object(json));
 	}

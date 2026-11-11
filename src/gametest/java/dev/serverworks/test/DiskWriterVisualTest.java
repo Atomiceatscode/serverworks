@@ -82,6 +82,36 @@ public final class DiskWriterVisualTest implements FabricClientGameTest {
 			context.waitTicks(10);
 			context.takeScreenshot("6_disks_written");
 
+			// Clicking an author's name lists everything they made.
+			String author = context.computeOnClient(client -> ((DiskWriterScreen) client.gui.screen()).resultAuthor(0));
+			double[] name = context.computeOnClient(client -> {
+				DiskWriterScreen screen = (DiskWriterScreen) client.gui.screen();
+				return new double[] {(screen.width - 276) / 2.0 + LIST_X + 29, (screen.height - 222) / 2.0 + LIST_Y + 16};
+			});
+			double[] at = toWindow(context, name[0], name[1]);
+			context.getInput().setCursorPos(at[0], at[1]);
+			context.waitTicks(1);
+			context.getInput().pressMouse(0);
+			context.waitTicks(5);
+			waitForResults(context);
+			context.waitTicks(40);
+			context.takeScreenshot("6b_by_author");
+			boolean allByAuthor = context.computeOnClient(client -> {
+				DiskWriterScreen screen = (DiskWriterScreen) client.gui.screen();
+				if (!screen.searchText().equals("@" + author) || screen.resultCount() == 0) {
+					return false;
+				}
+				for (int i = 0; i < screen.resultCount(); i++) {
+					if (!screen.resultAuthor(i).equalsIgnoreCase(author)) {
+						return false;
+					}
+				}
+				return true;
+			});
+			if (!allByAuthor) {
+				throw new AssertionError("Clicking " + author + " should list only their projects");
+			}
+
 			context.runOnClient(client -> client.player.closeContainer());
 			context.waitTicks(5);
 			context.setScreen(() -> new InventoryScreen(Minecraft.getInstance().player));

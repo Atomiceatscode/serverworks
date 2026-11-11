@@ -147,6 +147,21 @@ def make_server_core():
     animated("block/server_core_front_active.png", [core_face("active", p) for p in pulses], 3, True)
 
 
+STONE = rgba("#7d828c")
+STONE_DARK = rgba("#4f535c")
+
+
+def glyph_colour(ch, accent, second):
+    """The colour a glyph character stands for; see platforms.py."""
+    white = rgba("#ffffff")
+    black = rgba("#000000")
+    return {
+        "#": accent, "+": mix(accent, white, 0.4), "-": mix(accent, black, 0.35),
+        "o": second, "~": mix(second, white, 0.4), ",": mix(second, black, 0.35),
+        "*": rgba("#f4f1ea"), "=": STONE, "_": STONE_DARK,
+    }[ch]
+
+
 def module_face(platform_id, accent, second, glyph, look):
     """look: off, on, or a brightness 0..1 for the running animation."""
     c = component_base(f"module-{platform_id}")
@@ -159,7 +174,7 @@ def module_face(platform_id, accent, second, glyph, look):
         for gx, ch in enumerate(line):
             if ch == ".":
                 continue
-            colour = accent if ch == "#" else second
+            colour = glyph_colour(ch, accent, second)
             if not on:
                 colour = mix(colour, PLATE, 0.45)
             else:

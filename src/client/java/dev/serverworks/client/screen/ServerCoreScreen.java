@@ -127,7 +127,7 @@ public final class ServerCoreScreen extends AbstractContainerScreen<ServerCoreMe
 				button -> onPower()).bounds(leftPos + 8, topPos + 166, 90, 16).build());
 		commandBox = new EditBox(font, leftPos + 104, topPos + 167, 118, 14, Component.translatable("serverworks.server_core.console.hint"));
 		commandBox.setMaxLength(ConsoleCommandPayload.MAX_LENGTH);
-		commandBox.setHint(Component.translatable("serverworks.server_core.console.hint").withStyle(ChatFormatting.DARK_GRAY));
+		commandBox.setHint(fitHint(Component.translatable("serverworks.server_core.console.hint")));
 		commandBox.setValue(typed);
 		addRenderableWidget(commandBox);
 		packButton = addRenderableWidget(Button.builder(Component.translatable("serverworks.server_core.pack"),
@@ -287,8 +287,10 @@ public final class ServerCoreScreen extends AbstractContainerScreen<ServerCoreMe
 		boolean running = state == State.RUNNING && control;
 		commandBox.visible = consoleTab && !eulaPanel;
 		commandBox.setEditable(running);
-		commandBox.setHint(Component.translatable(running ? "serverworks.server_core.console.hint"
-				: "serverworks.server_core.console.not_running").withStyle(ChatFormatting.DARK_GRAY));
+		commandBox.setHint(fitHint(Component.translatable(running ? "serverworks.server_core.console.hint"
+				: "serverworks.server_core.console.not_running")));
+		commandBox.setTooltip(Tooltip.create(Component.translatable(running
+				? "serverworks.server_core.console.hint.tooltip" : "serverworks.server_core.console.not_running.tooltip")));
 		if (packButton != null) {
 			boolean modPlatform = status.formed() && status.platform().group() == dev.serverworks.rack.Platform.Group.MOD;
 			packButton.visible = !consoleTab && !eulaPanel && modPlatform;
@@ -307,7 +309,17 @@ public final class ServerCoreScreen extends AbstractContainerScreen<ServerCoreMe
 		}
 	}
 
-	// ---- drawing ----
+	/** The command box draws its hint unclipped, so shorten it to the box's inside width. */
+	private Component fitHint(Component hint) {
+		int room = commandBox == null ? 110 : commandBox.getInnerWidth();
+		String text = hint.getString();
+		if (font.width(text) > room) {
+			text = font.plainSubstrByWidth(text, room - font.width("…")) + "…";
+		}
+		return Component.literal(text).withStyle(ChatFormatting.DARK_GRAY);
+	}
+
+		// ---- drawing ----
 
 	@Override
 	public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {

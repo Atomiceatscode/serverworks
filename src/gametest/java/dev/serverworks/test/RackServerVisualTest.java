@@ -104,6 +104,12 @@ public final class RackServerVisualTest implements FabricClientGameTest {
 			openCore(server, corePos);
 			context.waitForScreen(ServerCoreScreen.class);
 			context.waitFor(client -> screen(client) != null && screen(client).hasStatus() && screen(client).instance() != null, 200);
+			// Before the server runs, the console's hint has to fit inside the panel.
+			context.runOnClient(client -> screen(client).showConsole(true));
+			context.waitTicks(3);
+			context.takeScreenshot("server_0_console_idle");
+			context.runOnClient(client -> screen(client).showConsole(false));
+			context.waitTicks(2);
 			context.runOnClient(client -> screen(client).pressPower());
 			context.waitTicks(3);
 			if (!context.computeOnClient(client -> screen(client).showingEula())) {
