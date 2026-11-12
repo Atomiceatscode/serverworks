@@ -21,6 +21,19 @@ been published.
 | Dependencies | Fabric API (required); Mod Menu, Jade (optional) |
 | Source | the project's Git repository, once published |
 
+## Version 1.2.1
+
+- File: `build/libs/serverworks-1.2.1.jar`
+- Release channel: Release
+- Changelog:
+  - Disk Writer: clicks on results, the version list and the favourites star work again
+    (Minecraft 26.3 numbers mouse buttons differently).
+  - Favourites honour `@author` searches.
+  - The Disk Writer warns when a project has no version for this Minecraft yet.
+  - Breaking a filled Drive Bay in Creative mode drops it with its disks.
+  - Proxy racks with no plugins show a proper message; help text matches 1.2.0's rack sizes.
+  - Showcase signs wrap long names; small text fixes.
+
 ## Version 1.2.0
 
 - File: `build/libs/serverworks-1.2.0.jar`
