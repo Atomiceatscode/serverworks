@@ -19,12 +19,29 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
 
-/** Holds the Mod Disks a rack will load. Its front shows how many slots are filled. */
+/**
+ * Holds the Mod Disks a rack will load: 8, 16 or 32 of them by tier. Its front has eight
+ * lights, each standing for an equal share of the slots. Broken, it keeps its disks inside,
+ * like a shulker box, so a bay can be carried or crafted into the next tier with them.
+ */
 public final class DriveBayBlock extends RackComponentBlock implements EntityBlock {
-	public static final IntegerProperty DISKS = IntegerProperty.create("disks", 0, RackStructure.DISKS_PER_BAY);
+	/** How many of the front's eight lights are lit. */
+	public static final IntegerProperty DISKS = IntegerProperty.create("disks", 0, 8);
 
-	public DriveBayBlock(BlockBehaviour.Properties properties) {
+	private final int capacity;
+
+	public DriveBayBlock(int capacity, BlockBehaviour.Properties properties) {
 		super(PartKind.DRIVE_BAY, properties);
+		this.capacity = capacity;
+	}
+
+	public int capacity() {
+		return capacity;
+	}
+
+	/** How many lights to show for this many disks: any disk lights at least one. */
+	public int lights(int disks) {
+		return disks <= 0 ? 0 : Math.max(1, Math.min(8, disks * 8 / capacity));
 	}
 
 	@Override

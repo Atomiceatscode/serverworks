@@ -16,7 +16,10 @@ public final class ModBlockEntities {
 	public static final BlockEntityType<ServerCoreBlockEntity> SERVER_CORE =
 			register("server_core", ServerCoreBlockEntity::new, ModBlocks.SERVER_CORE);
 	public static final BlockEntityType<DriveBayBlockEntity> DRIVE_BAY =
-			register("drive_bay", DriveBayBlockEntity::new, ModBlocks.DRIVE_BAY);
+			Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Serverworks.id("drive_bay"), new BlockEntityType<>(
+					DriveBayBlockEntity::new, Set.of(ModBlocks.DRIVE_BAY, ModBlocks.ADVANCED_DRIVE_BAY, ModBlocks.ELITE_DRIVE_BAY)));
+	public static final BlockEntityType<dev.serverworks.machine.MemoryBankBlockEntity> MEMORY_BANK =
+			register("memory_bank", dev.serverworks.machine.MemoryBankBlockEntity::new, ModBlocks.MEMORY_BANK);
 	public static final BlockEntityType<StatusDisplayBlockEntity> STATUS_DISPLAY =
 			register("status_display", StatusDisplayBlockEntity::new, ModBlocks.STATUS_DISPLAY);
 

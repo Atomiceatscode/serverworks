@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
+    "serverworks:advanced_drive_bay",
     "serverworks:diamond_rack_casing"
   ]
 }

@@ -18,16 +18,31 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
-/** The eight disk slots of a Drive Bay. */
-public final class DriveBayBlockEntity extends BaseContainerBlockEntity {
-	public static final int SLOTS = RackStructure.DISKS_PER_BAY;
-	private static final Component NAME = Component.translatable("container.serverworks.drive_bay");
-
-	private NonNullList<ItemStack> items = NonNullList.withSize(SLOTS, ItemStack.EMPTY);
+/** The disk slots of a Drive Bay: as many as its tier holds. */
+public final class DriveBayBlockEntity extends BaseContainerBlockEntity
+		implements net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider<Integer> {
+	private final int capacity;
+	private NonNullList<ItemStack> items;
 	private int lastCount = -1;
 
 	public DriveBayBlockEntity(BlockPos pos, BlockState state) {
 		super(ModBlockEntities.DRIVE_BAY, pos, state);
+		this.capacity = state.getBlock() instanceof DriveBayBlock bay ? bay.capacity() : 8;
+		this.items = NonNullList.withSize(capacity, ItemStack.EMPTY);
+	}
+
+	public int capacity() {
+		return capacity;
+	}
+
+	@Override
+	public Integer getScreenOpeningData(net.minecraft.server.level.ServerPlayer player) {
+		return capacity;
+	}
+
+	/** Like a shulker box, a bay keeps its disks when broken; they go with the dropped bay. */
+	@Override
+	public void preRemoveSideEffects(BlockPos pos, BlockState state) {
 	}
 
 	/** Written Mod Disks, written Pack Cartridges, and linked Link Cards. */
@@ -60,8 +75,8 @@ public final class DriveBayBlockEntity extends BaseContainerBlockEntity {
 						0.95F + serverLevel.getRandom().nextFloat() * 0.1F);
 			}
 			lastCount = count;
-			if (state.getBlock() instanceof DriveBayBlock && state.getValue(DriveBayBlock.DISKS) != count) {
-				serverLevel.setBlock(worldPosition, state.setValue(DriveBayBlock.DISKS, count), Block.UPDATE_CLIENTS);
+			if (state.getBlock() instanceof DriveBayBlock bay && state.getValue(DriveBayBlock.DISKS) != bay.lights(count)) {
+				serverLevel.setBlock(worldPosition, state.setValue(DriveBayBlock.DISKS, bay.lights(count)), Block.UPDATE_CLIENTS);
 			}
 			ServerCoreBlockEntity core = RackCores.owning(serverLevel, worldPosition);
 			if (core != null) {
@@ -82,7 +97,7 @@ public final class DriveBayBlockEntity extends BaseContainerBlockEntity {
 
 	@Override
 	public int getContainerSize() {
-		return SLOTS;
+		return capacity;
 	}
 
 	@Override
@@ -97,7 +112,7 @@ public final class DriveBayBlockEntity extends BaseContainerBlockEntity {
 
 	@Override
 	protected Component getDefaultName() {
-		return NAME;
+		return getBlockState().getBlock().getName();
 	}
 
 	@Override
@@ -114,7 +129,7 @@ public final class DriveBayBlockEntity extends BaseContainerBlockEntity {
 	@Override
 	protected void loadAdditional(ValueInput input) {
 		super.loadAdditional(input);
-		items = NonNullList.withSize(SLOTS, ItemStack.EMPTY);
+		items = NonNullList.withSize(capacity, ItemStack.EMPTY);
 		ContainerHelper.loadAllItems(input, items);
 		lastCount = diskCount();
 	}

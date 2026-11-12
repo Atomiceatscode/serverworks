@@ -1,0 +1,8 @@
+{
+  "parent": "serverworks:block/rack_component",
+  "textures": {
+    "front": "serverworks:block/advanced_drive_bay_front_8_active",
+    "side": "serverworks:block/rack_panel",
+    "frame": "serverworks:block/rack_frame"
+  }
+}

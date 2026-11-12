@@ -9,24 +9,26 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
-/** Eight disk slots in two rows, above the player's inventory. */
+/** A bay's disk slots in rows of eight, like a chest, above the player's inventory. */
 public final class DriveBayMenu extends AbstractContainerMenu {
-	public static final int COLUMNS = 4;
-	public static final int SLOT_X = 53;
-	public static final int SLOT_Y = 22;
+	public static final int COLUMNS = 8;
+	public static final int SLOT_X = 17;
+	public static final int SLOT_Y = 18;
 
 	private final Container bay;
+	private final int capacity;
 
-	public DriveBayMenu(int containerId, Inventory inventory) {
-		this(containerId, inventory, new SimpleContainer(DriveBayBlockEntity.SLOTS));
+	/** Client side: the server says how many slots the bay has. */
+	public DriveBayMenu(int containerId, Inventory inventory, Integer capacity) {
+		this(containerId, inventory, new SimpleContainer(capacity));
 	}
 
 	public DriveBayMenu(int containerId, Inventory inventory, Container bay) {
 		super(ModMenus.DRIVE_BAY, containerId);
-		checkContainerSize(bay, DriveBayBlockEntity.SLOTS);
 		this.bay = bay;
+		this.capacity = bay.getContainerSize();
 		bay.startOpen(inventory.player);
-		for (int i = 0; i < DriveBayBlockEntity.SLOTS; i++) {
+		for (int i = 0; i < capacity; i++) {
 			addSlot(new Slot(bay, i, SLOT_X + (i % COLUMNS) * 18, SLOT_Y + (i / COLUMNS) * 18) {
 				@Override
 				public boolean mayPlace(ItemStack stack) {
@@ -39,7 +41,16 @@ public final class DriveBayMenu extends AbstractContainerMenu {
 				}
 			});
 		}
-		addStandardInventorySlots(inventory, 8, 72);
+		addStandardInventorySlots(inventory, 8, inventoryY(capacity));
+	}
+
+	public int rows() {
+		return (capacity + COLUMNS - 1) / COLUMNS;
+	}
+
+	/** Where the player's inventory starts below this many bay slots. */
+	public static int inventoryY(int capacity) {
+		return SLOT_Y + (capacity + COLUMNS - 1) / COLUMNS * 18 + 13;
 	}
 
 	@Override
@@ -55,7 +66,7 @@ public final class DriveBayMenu extends AbstractContainerMenu {
 		}
 		ItemStack stack = slot.getItem();
 		ItemStack original = stack.copy();
-		int baySlots = DriveBayBlockEntity.SLOTS;
+		int baySlots = capacity;
 		if (slotIndex < baySlots) {
 			if (!moveItemStackTo(stack, baySlots, slots.size(), true)) {
 				return ItemStack.EMPTY;

@@ -19,7 +19,8 @@ import java.util.Set;
  */
 public final class RackValidator {
 	public static final int MIN_SIZE = 3;
-	public static final int MAX_SIZE = 7;
+	/** The largest rack of any casing; each casing tier allows up to its own size. */
+	public static final int MAX_SIZE = 9;
 	public static final int COMPONENTS_PER_VENT = 4;
 
 	private static final int[][] NEIGHBOURS = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
@@ -141,6 +142,9 @@ public final class RackValidator {
 		}
 
 		// 4. Component rules, in the order a builder would naturally fix them.
+		if (tier != null && (sx > tier.maxSize() || sy > tier.maxSize() || sz > tier.maxSize())) {
+			return RackScan.fail(Problem.TOO_LARGE_FOR_CASING, null);
+		}
 		if (cores > 1) {
 			return RackScan.fail(Problem.MULTIPLE_CORES, extraCore);
 		}
@@ -152,9 +156,6 @@ public final class RackValidator {
 		}
 		if (driveBays.isEmpty()) {
 			return RackScan.fail(Problem.NO_DRIVE_BAY, null);
-		}
-		if (memory == 0) {
-			return RackScan.fail(Problem.NO_MEMORY, null);
 		}
 		if (vents == 0) {
 			return RackScan.fail(Problem.NO_VENT, null);

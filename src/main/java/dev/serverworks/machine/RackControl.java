@@ -267,8 +267,8 @@ public final class RackControl {
 				core.rackId(),
 				rack.platform(),
 				SharedConstants.getCurrentVersion().name(),
-				rack.ramMb(),
-				rack.maxPlayers(),
+				core.ramMb(rack),
+				core.maxPlayers(rack),
 				port,
 				// Rack servers only listen on this computer unless direct ports were chosen.
 				server.isDedicatedServer() && dev.serverworks.ServerworksConfig.get().directPorts ? "" : "127.0.0.1",

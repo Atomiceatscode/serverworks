@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "serverworks:memory_stick_8gb",
+    "serverworks:memory_stick_8gb",
+    "minecraft:netherite_scrap"
+  ],
+  "result": {
+    "id": "serverworks:memory_stick_16gb"
+  }
+}

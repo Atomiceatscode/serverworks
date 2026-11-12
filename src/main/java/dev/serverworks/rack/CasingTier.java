@@ -2,26 +2,24 @@ package dev.serverworks.rack;
 
 import java.util.Locale;
 
-/** What a rack's frame is made of. A rack is only as good as its weakest casing. */
+/**
+ * What a rack's frame is made of. Stronger casing holds a bigger rack, with room for more
+ * bays and memory; a rack is only as big as its weakest casing allows.
+ */
 public enum CasingTier {
-	IRON(4096, 10),
-	DIAMOND(8192, 40),
-	NETHERITE(16384, 100);
+	IRON(5),
+	DIAMOND(7),
+	NETHERITE(9);
 
-	private final int maxRamMb;
-	private final int maxPlayers;
+	private final int maxSize;
 
-	CasingTier(int maxRamMb, int maxPlayers) {
-		this.maxRamMb = maxRamMb;
-		this.maxPlayers = maxPlayers;
+	CasingTier(int maxSize) {
+		this.maxSize = maxSize;
 	}
 
-	public int maxRamMb() {
-		return maxRamMb;
-	}
-
-	public int maxPlayers() {
-		return maxPlayers;
+	/** The most blocks a rack of this casing may measure along any side. */
+	public int maxSize() {
+		return maxSize;
 	}
 
 	public String id() {

@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "serverworks:memory_stick_2gb",
+    "serverworks:memory_stick_2gb",
+    "minecraft:diamond"
+  ],
+  "result": {
+    "id": "serverworks:memory_stick_4gb"
+  }
+}

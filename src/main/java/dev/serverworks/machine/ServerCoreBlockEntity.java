@@ -9,6 +9,7 @@ import dev.serverworks.rack.RackValidator;
 import dev.serverworks.registry.ModBlockEntities;
 import dev.serverworks.registry.ModComponents;
 import dev.serverworks.registry.ModItems;
+import dev.serverworks.rack.RackLimits;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.chat.Component;
@@ -176,7 +177,7 @@ public final class ServerCoreBlockEntity extends BlockEntity implements MenuProv
 		if (snapshot.state() != dev.serverworks.host.ServerInstance.State.RUNNING) {
 			return 0;
 		}
-		int max = Math.max(1, scan.structure().maxPlayers());
+		int max = Math.max(1, maxPlayers(scan.structure()));
 		int online = Math.max(0, snapshot.playersOnline());
 		return 1 + Math.min(14, (int) Math.ceil(14.0 * online / max));
 	}
@@ -226,7 +227,7 @@ public final class ServerCoreBlockEntity extends BlockEntity implements MenuProv
 			}
 		}
 		if (!rack.displays().isEmpty()) {
-			List<DisplayLine> lines = displayLines(serverLevel, rack, snapshot, open, instance);
+			List<DisplayLine> lines = displayLines(serverLevel, rack, snapshot, open, instance, maxPlayers(rack));
 			List<StatusDisplayBlockEntity.Head> heads = !running || instance == null ? List.of()
 					: instance.players().stream().map(p -> new StatusDisplayBlockEntity.Head(p.name(), p.id())).toList();
 			for (Pos pos : rack.displays()) {
@@ -239,12 +240,12 @@ public final class ServerCoreBlockEntity extends BlockEntity implements MenuProv
 
 	private static List<DisplayLine> displayLines(ServerLevel level, RackStructure rack,
 			dev.serverworks.host.ServerInstance.Snapshot snapshot, boolean open,
-			dev.serverworks.host.@Nullable ServerInstance instance) {
+			dev.serverworks.host.@Nullable ServerInstance instance, int maxPlayers) {
 		var state = snapshot.state();
 		String platform = rack.platform().translationKey();
 		if (state == dev.serverworks.host.ServerInstance.State.RUNNING) {
 			DisplayLine players = snapshot.playersOnline() >= 0
-					? DisplayLine.of("serverworks.display.players", 0xFFFFFF, snapshot.playersOnline(), rack.maxPlayers())
+					? DisplayLine.of("serverworks.display.players", 0xFFFFFF, snapshot.playersOnline(), maxPlayers)
 					: DisplayLine.of(platform, 0xFFFFFF);
 			String publicAddress = dev.serverworks.ServerworksConfig.get().publicAddress;
 			DisplayLine address = !level.getServer().isDedicatedServer()
@@ -408,8 +409,13 @@ public final class ServerCoreBlockEntity extends BlockEntity implements MenuProv
 		if (scan == null) {
 			return RackStatus.UNKNOWN;
 		}
-		return RackStatus.of(scan, scan.formed() ? disks(scan.structure()) : List.of(),
-				scan.formed() ? links(scan.structure()).size() : 0, redstoneControl, throughGateway());
+		if (!scan.formed()) {
+			return RackStatus.of(scan, List.of(), 0, redstoneControl, throughGateway(), 0, 0, 0);
+		}
+		RackStructure rack = scan.structure();
+		int ram = ramMb(rack);
+		return RackStatus.of(scan, disks(rack), links(rack).size(), redstoneControl, throughGateway(), ram,
+				RackLimits.playersFor(ram), diskSlots(rack));
 	}
 
 	/** The label of every disk in this rack's drive bays, in bay order. */
@@ -434,6 +440,36 @@ public final class ServerCoreBlockEntity extends BlockEntity implements MenuProv
 
 	void setPendingRules(List<String> commands) {
 		pendingRules = List.copyOf(commands);
+	}
+
+	/** The rack's memory: the base amount plus every RAM stick in its Memory Banks. */
+	public int ramMb(RackStructure rack) {
+		int sticks = 0;
+		if (level != null) {
+			for (Pos pos : rack.members()) {
+				if (level.getBlockEntity(new BlockPos(pos.x(), pos.y(), pos.z())) instanceof MemoryBankBlockEntity bank) {
+					sticks += bank.megabytes();
+				}
+			}
+		}
+		return RackLimits.ramMb(sticks);
+	}
+
+	public int maxPlayers(RackStructure rack) {
+		return RackLimits.playersFor(ramMb(rack));
+	}
+
+	/** How many disks the rack's Drive Bays hold together. */
+	public int diskSlots(RackStructure rack) {
+		int slots = 0;
+		if (level != null) {
+			for (Pos pos : rack.driveBays()) {
+				if (level.getBlockEntity(new BlockPos(pos.x(), pos.y(), pos.z())) instanceof DriveBayBlockEntity bay) {
+					slots += bay.capacity();
+				}
+			}
+		}
+		return slots;
 	}
 
 	/** The first Config Card in this rack's bays, or null. A blank card counts, with default settings. */

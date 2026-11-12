@@ -36,7 +36,9 @@ public record RackScan(Problem problem, Pos problemPos, RackStructure structure)
 		NO_PLATFORM,
 		MULTIPLE_PLATFORMS,
 		NO_DRIVE_BAY,
+		/** Memory Banks are optional now; kept so saved scans and translations still line up. */
 		NO_MEMORY,
+		TOO_LARGE_FOR_CASING,
 		NO_VENT,
 		NOT_ENOUGH_VENTS;
 

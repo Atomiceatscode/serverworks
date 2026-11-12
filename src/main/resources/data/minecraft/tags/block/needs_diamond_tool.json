@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
+    "serverworks:elite_drive_bay",
     "serverworks:netherite_rack_casing"
   ]
 }

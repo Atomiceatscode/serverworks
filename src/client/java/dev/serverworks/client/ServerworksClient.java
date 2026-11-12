@@ -28,6 +28,7 @@ public final class ServerworksClient implements ClientModInitializer {
 		SpecialModelRenderers.ID_MAPPER.put(Serverworks.id("disk_label"), DiskLabelRenderer.Unbaked.MAP_CODEC);
 		MenuScreens.register(ModMenus.DISK_WRITER, DiskWriterScreen::new);
 		MenuScreens.register(ModMenus.DRIVE_BAY, DriveBayScreen::new);
+		MenuScreens.register(ModMenus.MEMORY_BANK, dev.serverworks.client.screen.MemoryBankScreen::new);
 		MenuScreens.register(ModMenus.SERVER_CORE, ServerCoreScreen::new);
 		ClientPlayNetworking.registerGlobalReceiver(RackStatusPayload.TYPE, (payload, context) -> {
 			if (context.client().gui.screen() instanceof ServerCoreScreen screen

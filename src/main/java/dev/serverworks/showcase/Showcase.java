@@ -132,8 +132,8 @@ public final class Showcase {
 		// Row 1: the machines, each on a labelled pedestal.
 		List<ItemLike> machines = List.of(ModBlocks.DISK_WRITER, ModBlocks.RACK_CASINGS.get(CasingTier.IRON),
 				ModBlocks.RACK_CASINGS.get(CasingTier.DIAMOND), ModBlocks.RACK_CASINGS.get(CasingTier.NETHERITE),
-				ModBlocks.SERVER_CORE, ModBlocks.DRIVE_BAY, ModBlocks.MEMORY_BANK, ModBlocks.VENT, ModBlocks.GATEWAY,
-				ModBlocks.STATUS_DISPLAY);
+				ModBlocks.SERVER_CORE, ModBlocks.DRIVE_BAY, ModBlocks.ADVANCED_DRIVE_BAY, ModBlocks.ELITE_DRIVE_BAY,
+				ModBlocks.MEMORY_BANK, ModBlocks.VENT, ModBlocks.GATEWAY, ModBlocks.STATUS_DISPLAY);
 		row(level, origin.offset(0, 0, 5), machines);
 
 		// Row 2: one Platform Module per server software.
@@ -148,11 +148,14 @@ public final class Showcase {
 		level.setBlockAndUpdate(station, ModBlocks.DISK_WRITER.defaultBlockState()
 				.setValue(dev.serverworks.machine.DiskWriterBlock.FACING, Direction.NORTH));
 		Container supplies = chest(level, station.west());
-		fill(supplies, List.of(stack(ModItems.OPERATORS_MANUAL, 1), stack(ModItems.WRENCH, 1), stack(ModItems.BLANK_DISK, 16),
-				stack(ModItems.BLANK_DISK, 16), stack(ModItems.LINK_CARD, 8)));
+		List<ItemStack> kit = new ArrayList<>(List.of(stack(ModItems.OPERATORS_MANUAL, 1), stack(ModItems.WRENCH, 1),
+				stack(ModItems.BLANK_DISK, 16), stack(ModItems.BLANK_DISK, 16), stack(ModItems.LINK_CARD, 8),
+				stack(ModItems.CONFIG_CARD, 1), stack(ModItems.WORLD_DRIVE, 1)));
+		ModItems.MEMORY_STICKS.values().forEach(stick -> kit.add(stack(stick, 4)));
+		fill(supplies, kit);
 		Container written = chest(level, station.west(2));
 		standingSign(level, station.north(), DyeColor.LIME, "1. Disk Writer", "Put a Blank Disk", "in, search, pick,", "take the disk");
-		standingSign(level, station.west().north(), DyeColor.LIME, "Supplies", "Manual, Wrench,", "Blank Disks,", "Link Cards");
+		standingSign(level, station.west().north(), DyeColor.LIME, "Supplies", "Manual, Wrench,", "Disks, Cards,", "RAM Sticks");
 		standingSign(level, station.west(2).north(), DyeColor.LIME, "Written disks", "Ready to slot", "into any", "Drive Bay");
 
 		// Example racks, each 5 wide with display, core and gateway on the front.
@@ -259,6 +262,10 @@ public final class Showcase {
 		level.setBlockAndUpdate(origin.offset(1, 1, 0), facing(ModBlocks.GATEWAY));
 		level.setBlockAndUpdate(origin.offset(-2, 1, 1), ModBlocks.DRIVE_BAY.defaultBlockState().setValue(RackComponentBlock.FACING, Direction.WEST));
 		level.setBlockAndUpdate(origin.offset(2, 1, 1), ModBlocks.MEMORY_BANK.defaultBlockState().setValue(RackComponentBlock.FACING, Direction.EAST));
+		// A 2 GB stick, so each example server has 3 GB.
+		if (level.getBlockEntity(origin.offset(2, 1, 1)) instanceof dev.serverworks.machine.MemoryBankBlockEntity bank) {
+			bank.setItem(0, new ItemStack(ModItems.MEMORY_STICKS.get(2)));
+		}
 		level.setBlockAndUpdate(origin.offset(0, 2, 1), ModBlocks.VENT.defaultBlockState().setValue(RackComponentBlock.FACING, Direction.UP));
 		level.setBlockAndUpdate(origin.offset(0, 1, 2), ModBlocks.PLATFORM_MODULES.get(platform).defaultBlockState()
 				.setValue(RackComponentBlock.FACING, Direction.SOUTH));

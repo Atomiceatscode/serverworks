@@ -36,9 +36,14 @@ public final class ModBlocks {
 			machine(3.5F, 6.0F).lightLevel(state -> !state.getValue(RackBlock.FORMED) ? 0
 					: state.getValue(RackComponentBlock.ACTIVE) ? 12 : 7));
 	public static final Map<Platform, Block> PLATFORM_MODULES = platformModules();
-	public static final Block DRIVE_BAY = register("drive_bay", DriveBayBlock::new, machine(3.5F, 6.0F));
-	public static final Block MEMORY_BANK = register("memory_bank",
-			properties -> new RackComponentBlock(PartKind.MEMORY_BANK, properties), machine(3.5F, 6.0F));
+	public static final Block DRIVE_BAY = register("drive_bay", properties -> new DriveBayBlock(8, properties),
+			machine(3.5F, 6.0F));
+	public static final Block ADVANCED_DRIVE_BAY = register("advanced_drive_bay",
+			properties -> new DriveBayBlock(16, properties), machine(4.0F, 8.0F));
+	public static final Block ELITE_DRIVE_BAY = register("elite_drive_bay",
+			properties -> new DriveBayBlock(32, properties), machine(5.0F, 1200.0F));
+	public static final Block MEMORY_BANK = register("memory_bank", dev.serverworks.machine.MemoryBankBlock::new,
+			machine(3.5F, 6.0F));
 	public static final Block VENT = register("vent",
 			properties -> new RackComponentBlock(PartKind.VENT, properties), machine(3.5F, 6.0F));
 	public static final Block GATEWAY = register("gateway", GatewayBlock::new,

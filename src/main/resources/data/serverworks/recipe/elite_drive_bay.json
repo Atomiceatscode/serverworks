@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_transmute",
+  "category": "misc",
+  "input": "serverworks:advanced_drive_bay",
+  "material": "minecraft:netherite_ingot",
+  "result": {
+    "id": "serverworks:elite_drive_bay"
+  }
+}

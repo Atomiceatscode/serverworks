@@ -256,22 +256,77 @@ def casings():
         previous = name
 
 
-def drive_bay():
+def drive_bay(name="drive_bay", display="Drive Bay", tool="needs_stone_tool"):
+    """A Drive Bay of any tier. It drops itself with its disks inside, like a shulker box."""
     variants = {}
     for disks in range(9):
         for look in ("", "_on", "_active"):
-            front_model(f"drive_bay_{disks}{look}", f"drive_bay_front_{disks}{look}")
+            front_model(f"{name}_{disks}{look}", f"{name}_front_{disks}{look}")
         for facing, rotation in FACINGS.items():
             for active in ("false", "true"):
                 variants[f"active={active},disks={disks},facing={facing},formed=false"] = {
-                    "model": f"{MOD}:block/drive_bay_{disks}", **rotation}
+                    "model": f"{MOD}:block/{name}_{disks}", **rotation}
                 variants[f"active={active},disks={disks},facing={facing},formed=true"] = {
-                    "model": f"{MOD}:block/drive_bay_{disks}{'_active' if active == 'true' else '_on'}", **rotation}
-    write(ASSETS / "blockstates/drive_bay.json", {"variants": variants})
-    block_item("drive_bay", "drive_bay_0")
-    drops_itself("drive_bay")
-    mineable("drive_bay")
-    lang[f"block.{MOD}.drive_bay"] = "Drive Bay"
+                    "model": f"{MOD}:block/{name}_{disks}{'_active' if active == 'true' else '_on'}", **rotation}
+    write(ASSETS / f"blockstates/{name}.json", {"variants": variants})
+    block_item(name, f"{name}_0")
+    write(DATA / f"{MOD}/loot_table/blocks/{name}.json", {
+        "type": "minecraft:block",
+        "pools": [{
+            "condition": {"type": "minecraft:survives_explosion"},
+            "entries": [{"type": "minecraft:item", "name": f"{MOD}:{name}",
+                         "modifier": {"type": "minecraft:copy_components", "source": "block_entity",
+                                      "include": ["minecraft:custom_name", "minecraft:container"]}}],
+            "rolls": 1}],
+        "random_sequence": f"{MOD}:blocks/{name}"})
+    mineable(name, tool)
+    lang[f"block.{MOD}.{name}"] = display
+
+
+def memory_bank():
+    """Shows one lit module per RAM stick it holds."""
+    variants = {}
+    for sticks in range(5):
+        for look in ("", "_on", "_active"):
+            front_model(f"memory_bank_{sticks}{look}", f"memory_bank_front_{sticks}{look}")
+        for facing, rotation in FACINGS.items():
+            for active in ("false", "true"):
+                variants[f"active={active},facing={facing},formed=false,sticks={sticks}"] = {
+                    "model": f"{MOD}:block/memory_bank_{sticks}", **rotation}
+                variants[f"active={active},facing={facing},formed=true,sticks={sticks}"] = {
+                    "model": f"{MOD}:block/memory_bank_{sticks}{'_active' if active == 'true' else '_on'}", **rotation}
+    write(ASSETS / "blockstates/memory_bank.json", {"variants": variants})
+    block_item("memory_bank", "memory_bank_4_on")
+    drops_itself("memory_bank")
+    mineable("memory_bank")
+    lang[f"block.{MOD}.memory_bank"] = "Memory Bank"
+
+
+def transmute(name, input_item, material, unlock_item):
+    """The next tier of a block, made from the last one plus a material, keeping what it holds."""
+    MANUAL_RECIPES.append({"result": f"{MOD}:{name}", "count": 1, "shape": "shapeless", "items": [input_item, material]})
+    write(DATA / f"{MOD}/recipe/{name}.json", {
+        "type": "minecraft:crafting_transmute", "category": "misc", "input": input_item, "material": material,
+        "result": {"id": f"{MOD}:{name}"}})
+    unlock(name, unlock_item, "has_ingredient")
+
+
+def memory_sticks():
+    sizes = [1, 2, 4, 8, 16]
+    extra = {2: "minecraft:gold_ingot", 4: "minecraft:diamond", 8: "minecraft:emerald", 16: "minecraft:netherite_scrap"}
+    for gb in sizes:
+        name = f"memory_stick_{gb}gb"
+        flat_item(name)
+        write(ASSETS / f"items/{name}.json", {"model": {"type": "minecraft:model", "model": f"{MOD}:item/{name}"}})
+        lang[f"item.{MOD}.{name}"] = f"RAM Stick ({gb} GB)"
+        if gb == 1:
+            shapeless(name, ["minecraft:iron_ingot", "minecraft:redstone", "minecraft:redstone", "minecraft:gold_nugget"],
+                      "minecraft:redstone")
+        else:
+            smaller = f"{MOD}:memory_stick_{gb // 2}gb"
+            shapeless(name, [smaller, smaller, extra[gb]], smaller)
+    lang[f"item.{MOD}.memory_stick.adds"] = "Adds %s GB to a rack's server"
+    lang[f"item.{MOD}.memory_stick.use"] = "Put it in a rack's Memory Bank"
 
 
 def gateway():
@@ -306,7 +361,13 @@ def rack_components():
         "I": "minecraft:iron_ingot", "B": f"{MOD}:blank_disk", "C": casing, "R": "minecraft:redstone"},
         unlock_item=casing)
 
-    component("memory_bank", "Memory Bank")
+    transmute("advanced_drive_bay", f"{MOD}:drive_bay", "minecraft:diamond", f"{MOD}:drive_bay")
+    drive_bay("advanced_drive_bay", "Advanced Drive Bay", "needs_iron_tool")
+    transmute("elite_drive_bay", f"{MOD}:advanced_drive_bay", "minecraft:netherite_ingot", f"{MOD}:advanced_drive_bay")
+    drive_bay("elite_drive_bay", "Elite Drive Bay", "needs_diamond_tool")
+
+    memory_bank()
+    memory_sticks()
     shaped("memory_bank", ["GQG", "QCQ", "GRG"], {
         "G": "minecraft:gold_ingot", "Q": "minecraft:quartz", "C": casing, "R": "minecraft:redstone"},
         unlock_item=casing)
@@ -347,6 +408,9 @@ def language():
         "item.serverworks.mod_disk.server_only": "Players can join without installing it",
         "container.serverworks.disk_writer": "Disk Writer",
         "container.serverworks.drive_bay": "Drive Bay",
+        "container.serverworks.memory_bank": "Memory Bank",
+        "serverworks.memory_bank.total": "+%s GB",
+        "serverworks.rack.problem.too_large_for_casing": "Too big for this casing: iron racks go up to 5 blocks a side, diamond 7, netherite 9.",
         "container.serverworks.server_core": "Server Core",
 
         "serverworks.project_type.mod": "Mod",
@@ -418,7 +482,8 @@ def language():
         "serverworks.server_core.vents": "Vents",
         "serverworks.server_core.vents.value": "%s of %s",
         "serverworks.server_core.memory": "Memory",
-        "serverworks.server_core.memory.value": "%s of %s GB",
+        "serverworks.server_core.memory.value": "%s GB",
+        "serverworks.server_core.frame.value": "%s (to %s)",
         "serverworks.server_core.players": "Players",
         "serverworks.server_core.players.value": "up to %s",
         "serverworks.server_core.bays": "Bays",
@@ -629,14 +694,16 @@ MANUAL = {
               "A modpack makes a Pack Cartridge. A disk takes the newest version that suits the rack, unless you "
               "pin one under the project's name."),
     "building": ("Building a Rack",
-                 "A rack is a hollow box of Rack Casing, 3 to 7 blocks along each side. Edges and corners must be "
-                 "casing; components go on the faces; the inside stays empty.\n"
-                 "The weakest casing sets the limits: iron racks allow 4 GB and 10 players, diamond 8 GB and 40, "
-                 "netherite 16 GB and 100. Use a Rack Wrench on any rack block to outline everything still missing."),
+                 "A rack is a hollow box of Rack Casing, at least 3 blocks along each side. Edges and corners must "
+                 "be casing; components go on the faces; the inside stays empty.\n"
+                 "Stronger casing builds bigger racks, with room for more bays: iron up to 5 blocks a side, diamond "
+                 "7, netherite 9. The weakest casing counts. A Rack Wrench outlines anything still missing."),
     "parts": ("Rack Components",
               "Server Core: the controls. One per rack.\n"
               "Platform Module: picks the server software. One per rack.\n"
-              "Drive Bay: holds eight disks. Memory Bank: 1 GB each, on top of 1 GB to start.\n"
+              "Drive Bay: 8 disks; Advanced 16; Elite 32, crafted from the tier below with its disks kept.\n"
+              "Memory Bank (optional): holds four RAM Sticks of 1 to 16 GB. Servers get 1 GB plus the sticks, up "
+              "to 32 GB, and 10 players per GB, up to 100.\n"
               "Vent: one for every four Drive Bays and Memory Banks.\n"
               "Gateway and Status Display are optional: the way in, and a screen showing who is on."),
     "platforms": ("Platforms",
@@ -817,7 +884,9 @@ def manual_text():
 def manual_recipes():
     """Every recipe, for the Operator's Manual's recipe pages."""
     order = ["blank_disk", "disk_writer", "operators_manual", "wrench", "iron_rack_casing", "diamond_rack_casing",
-             "netherite_rack_casing", "server_core", "drive_bay", "memory_bank", "vent", "gateway",
+             "netherite_rack_casing", "server_core", "drive_bay", "advanced_drive_bay", "elite_drive_bay", "memory_bank",
+             "memory_stick_1gb", "memory_stick_2gb", "memory_stick_4gb", "memory_stick_8gb", "memory_stick_16gb",
+             "vent", "gateway",
              "status_display", "link_card"]
 
     def rank(recipe):

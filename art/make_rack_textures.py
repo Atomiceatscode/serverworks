@@ -193,9 +193,20 @@ def make_platform_modules():
         animated(f"block/{platform_id}_platform_module_front_active.png", frames, 4, True)
 
 
-def bay_face(disks, state, frame=0):
+# Bezel colour by Drive Bay tier: plain steel, diamond, netherite.
+BAY_TIERS = {"drive_bay": None, "advanced_drive_bay": rgba("#3fb6c2"), "elite_drive_bay": rgba("#6a4f7a")}
+
+
+def bay_face(disks, state, frame=0, trim=None):
     c = component_base("bay")
     c.rect(1, 1, 14, 14, STEEL_DEEP)
+    if trim is not None:
+        lit = state != "off"
+        edge = trim if lit else mix(trim, STEEL_DEEP, 0.5)
+        c.rect(1, 1, 14, 1, edge)
+        c.rect(1, 14, 14, 14, mix(edge, rgba("#000000"), 0.3))
+        c.rect(1, 1, 1, 14, edge)
+        c.rect(14, 1, 14, 14, mix(edge, rgba("#000000"), 0.3))
     blink = random.Random(f"bay-{disks}-{frame}")
     for slot in range(8):
         col, row = slot % 2, slot // 2
@@ -217,13 +228,16 @@ def bay_face(disks, state, frame=0):
 
 
 def make_drive_bay():
-    for disks in range(9):
-        bay_face(disks, "off").save(f"block/drive_bay_front_{disks}.png")
-        bay_face(disks, "on").save(f"block/drive_bay_front_{disks}_on.png")
-        animated(f"block/drive_bay_front_{disks}_active.png", [bay_face(disks, "active", f) for f in range(4)], 3)
+    for name, trim in BAY_TIERS.items():
+        for disks in range(9):
+            bay_face(disks, "off", trim=trim).save(f"block/{name}_front_{disks}.png")
+            bay_face(disks, "on", trim=trim).save(f"block/{name}_front_{disks}_on.png")
+            animated(f"block/{name}_front_{disks}_active.png",
+                     [bay_face(disks, "active", f, trim) for f in range(4)], 3)
 
 
-def memory_face(state, chase=-1):
+def memory_face(state, chase=-1, sticks=4):
+    """Four module slots; only the ones holding a RAM stick show a board."""
     c = component_base("memory")
     c.rect(1, 1, 14, 14, STEEL_DEEP)
     on = state != "off"
@@ -232,6 +246,12 @@ def memory_face(state, chase=-1):
     gold = rgba("#e6c04a") if on else rgba("#8f7a37")
     for i in range(4):
         x = 2 + i * 3
+        if i >= sticks:
+            # An empty slot: a dark recess with its socket at the bottom.
+            c.rect(x, 2, x + 2, 12, rgba("#0f1217"))
+            c.rect(x + 1, 3, x + 1, 11, rgba("#1a1e26"))
+            c.rect(x, 13, x + 2, 13, STEEL_DARK)
+            continue
         c.rect(x, 2, x + 2, 12, board)
         c.rect(x, 2, x, 12, shade(board, 26))
         for y in (3, 6, 9):
@@ -245,9 +265,11 @@ def memory_face(state, chase=-1):
 
 
 def make_memory_bank():
-    memory_face("off").save("block/memory_bank_front.png")
-    memory_face("on").save("block/memory_bank_front_on.png")
-    animated("block/memory_bank_front_active.png", [memory_face("active", i) for i in range(4)], 4)
+    for sticks in range(5):
+        memory_face("off", sticks=sticks).save(f"block/memory_bank_front_{sticks}.png")
+        memory_face("on", sticks=sticks).save(f"block/memory_bank_front_{sticks}_on.png")
+        animated(f"block/memory_bank_front_{sticks}_active.png",
+                 [memory_face("active", i, sticks) for i in range(4)], 4)
 
 
 FAN_FRAMES = [
@@ -421,16 +443,24 @@ def make_guis():
             core.rect(x, y, x + 15, y + 15, WELL_ALT)
     core.save("gui/container/server_core.png")
 
-    bay = Canvas(256, 256)
-    gui_panel(bay, 0, 0, 176, 154)
-    for i in range(8):
-        gui_slot(bay, 53 + (i % 4) * 18, 22 + (i // 4) * 18)
-    for row in range(3):
+    def container(rows_of_eight, slot_x, slot_y, columns, slots):
+        """A panel with `slots` slots in rows, then the player's inventory below, like a chest."""
+        inventory_y = slot_y + rows_of_eight * 18 + 13
+        height = inventory_y + 83
+        c = Canvas(256, 256)
+        gui_panel(c, 0, 0, 176, height)
+        for i in range(slots):
+            gui_slot(c, slot_x + (i % columns) * 18, slot_y + (i // columns) * 18)
+        for row in range(3):
+            for col in range(9):
+                gui_slot(c, 8 + col * 18, inventory_y + row * 18)
         for col in range(9):
-            gui_slot(bay, 8 + col * 18, 72 + row * 18)
-    for col in range(9):
-        gui_slot(bay, 8 + col * 18, 130)
-    bay.save("gui/container/drive_bay.png")
+            gui_slot(c, 8 + col * 18, inventory_y + 58)
+        return c
+
+    for rows in (1, 2, 4):
+        container(rows, 17, 18, 8, rows * 8).save(f"gui/container/drive_bay_{rows}.png")
+    container(1, 53, 20, 4, 4).save("gui/container/memory_bank.png")
 
 
 if __name__ == "__main__":

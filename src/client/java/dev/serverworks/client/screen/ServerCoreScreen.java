@@ -724,7 +724,8 @@ public final class ServerCoreScreen extends AbstractContainerScreen<ServerCoreMe
 			}
 			return;
 		}
-		row(graphics, LEFT_X, 0, "serverworks.server_core.frame", Component.translatable(status.tier().translationKey()), TEXT);
+		row(graphics, LEFT_X, 0, "serverworks.server_core.frame", Component.translatable("serverworks.server_core.frame.value",
+				Component.translatable(status.tier().translationKey()), status.tier().maxSize()), TEXT);
 		row(graphics, LEFT_X, 1, "serverworks.server_core.size",
 				Component.literal(status.sizeX() + " x " + status.sizeY() + " x " + status.sizeZ()), TEXT);
 		boolean ventsShort = status.vents() < status.ventsNeeded();
@@ -732,8 +733,8 @@ public final class ServerCoreScreen extends AbstractContainerScreen<ServerCoreMe
 				Component.translatable("serverworks.server_core.vents.value", status.vents(), status.ventsNeeded()),
 				ventsShort ? TEXT_WARN : TEXT);
 		row(graphics, RIGHT_X, 0, "serverworks.server_core.memory",
-				Component.translatable("serverworks.server_core.memory.value", gigabytes(status.ramMb()),
-						gigabytes(status.tier().maxRamMb())), status.ramMb() >= status.tier().maxRamMb() ? TEXT_WARN : TEXT);
+				Component.translatable("serverworks.server_core.memory.value", gigabytes(status.ramMb())),
+				status.ramMb() >= dev.serverworks.rack.RackLimits.MAX_RAM_MB ? TEXT_WARN : TEXT);
 		row(graphics, RIGHT_X, 1, "serverworks.server_core.players",
 				Component.translatable("serverworks.server_core.players.value", status.maxPlayers()), TEXT);
 		row(graphics, RIGHT_X, 2, "serverworks.server_core.bays", Component.literal(Integer.toString(status.driveBays())), TEXT);

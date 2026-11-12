@@ -21,6 +21,18 @@ been published.
 | Dependencies | Fabric API (required); Mod Menu, Jade (optional) |
 | Source | the project's Git repository, once published |
 
+## Version 1.2.0
+
+- File: `build/libs/serverworks-1.2.0.jar`
+- Release channel: Release
+- Changelog:
+  - RAM Sticks (1, 2, 4, 8 and 16 GB) go in Memory Banks, which now have four slots and
+    are optional. A server gets 1 GB plus its sticks, up to 32 GB, and 10 players per GB.
+  - Casing now sets how big a rack can be: iron up to 5 blocks a side, diamond 7,
+    netherite 9.
+  - Advanced (16 disks) and Elite (32 disks) Drive Bays, crafted from the tier below.
+    Drive Bays keep their disks when broken, like shulker boxes.
+
 ## Version 1.1.0
 
 - File: `build/libs/serverworks-1.1.0.jar`
@@ -88,7 +100,7 @@ you back.
   tooltips if you have them.
 
 ### Good to know
-- Racks run real servers, so they use real memory (1 to 16 GB each) and need an internet
+- Racks run real servers, so they use real memory (1 to 32 GB each) and need an internet
   connection.
 - Only you (in singleplayer) or operators (on a server) can start racks, because starting
   one runs downloaded code on that computer.

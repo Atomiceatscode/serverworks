@@ -67,10 +67,8 @@ class RackValidatorTest {
 		assertEquals(Platform.PAPER, rack.platform());
 		assertEquals(new Pos(1, 1, 2), rack.platformPos());
 		assertEquals(List.of(new Pos(0, 1, 1)), rack.driveBays());
-		assertEquals(8, rack.diskSlots());
 		assertEquals(CasingTier.IRON, rack.tier());
-		assertEquals(2048, rack.ramMb());
-		assertEquals(10, rack.maxPlayers());
+		assertEquals(1, rack.memoryBanks());
 	}
 
 	@Test
@@ -150,9 +148,10 @@ class RackValidatorTest {
 		noBay.set(0, 1, 1, Cell.casing(CasingTier.IRON));
 		assertEquals(Problem.NO_DRIVE_BAY, RackValidator.scan(noBay, CORE).problem());
 
+		// Memory Banks are optional: a rack without one runs on the base memory.
 		World noMemory = minimal(CasingTier.IRON);
 		noMemory.set(2, 1, 1, Cell.casing(CasingTier.IRON));
-		assertEquals(Problem.NO_MEMORY, RackValidator.scan(noMemory, CORE).problem());
+		assertTrue(RackValidator.scan(noMemory, CORE).formed());
 
 		World noVent = minimal(CasingTier.IRON);
 		noVent.set(1, 2, 1, Cell.casing(CasingTier.IRON));
@@ -193,23 +192,57 @@ class RackValidatorTest {
 		world.set(3, 3, 0, Cell.part(PartKind.VENT));
 		RackScan fixed = RackValidator.scan(world, new Pos(2, 2, 0));
 		assertTrue(fixed.formed(), fixed.problem().toString());
-		assertEquals(24, fixed.structure().diskSlots());
-		assertEquals(3072, fixed.structure().ramMb());
+		assertEquals(3, fixed.structure().driveBays().size());
+		assertEquals(2, fixed.structure().memoryBanks());
 	}
 
 	@Test
 	void rackIsOnlyAsGoodAsItsWeakestCasing() {
 		World world = minimal(CasingTier.NETHERITE);
 		assertEquals(CasingTier.NETHERITE, RackValidator.scan(world, CORE).structure().tier());
-		assertEquals(100, RackValidator.scan(world, CORE).structure().maxPlayers());
 
 		world.set(0, 0, 0, Cell.casing(CasingTier.IRON));
 		assertEquals(CasingTier.IRON, RackValidator.scan(world, CORE).structure().tier());
 	}
 
 	@Test
-	void memoryIsCappedByTier() {
-		World world = new World().shell(7, 7, 3, CasingTier.IRON);
+	void casingSetsHowBigARackMayBe() {
+		for (CasingTier tier : CasingTier.values()) {
+			World fits = sized(tier.maxSize(), tier);
+			assertTrue(RackValidator.scan(fits, new Pos(1, 1, 0)).formed(), tier + " at " + tier.maxSize());
+		}
+		assertEquals(Problem.TOO_LARGE_FOR_CASING, RackValidator.scan(sized(6, CasingTier.IRON), new Pos(1, 1, 0)).problem());
+		assertEquals(Problem.TOO_LARGE_FOR_CASING, RackValidator.scan(sized(8, CasingTier.DIAMOND), new Pos(1, 1, 0)).problem());
+		// One weak casing caps the whole rack.
+		World mixed = sized(7, CasingTier.DIAMOND);
+		mixed.set(0, 0, 0, Cell.casing(CasingTier.IRON));
+		assertEquals(Problem.TOO_LARGE_FOR_CASING, RackValidator.scan(mixed, new Pos(1, 1, 0)).problem());
+		assertEquals(Problem.TOO_LARGE, RackValidator.scan(sized(10, CasingTier.NETHERITE), new Pos(1, 1, 0)).problem());
+	}
+
+	/** A long rack of one casing, with what it needs on its front face. */
+	private static World sized(int length, CasingTier tier) {
+		World world = new World().shell(length, 3, 3, tier);
+		world.set(1, 1, 0, Cell.part(PartKind.CORE));
+		world.set(1, 1, 2, Cell.platform(Platform.PAPER));
+		world.set(0, 1, 1, Cell.part(PartKind.DRIVE_BAY));
+		world.set(1, 2, 1, Cell.part(PartKind.VENT));
+		return world;
+	}
+
+	@Test
+	void memoryLimitsComeFromSticks() {
+		assertEquals(1024, RackLimits.ramMb(0));
+		assertEquals(3072, RackLimits.ramMb(2048));
+		assertEquals(32 * 1024, RackLimits.ramMb(64 * 1024), "capped");
+		assertEquals(10, RackLimits.playersFor(1024));
+		assertEquals(40, RackLimits.playersFor(4096));
+		assertEquals(100, RackLimits.playersFor(32 * 1024), "capped");
+	}
+
+	@Test
+	void manyMemoryBanksStillForm() {
+		World world = new World().shell(7, 7, 3, CasingTier.DIAMOND);
 		world.set(3, 3, 0, Cell.part(PartKind.CORE));
 		world.set(1, 1, 0, Cell.platform(Platform.PAPER));
 		world.set(2, 1, 0, Cell.part(PartKind.DRIVE_BAY));
@@ -220,12 +253,12 @@ class RackValidatorTest {
 		world.set(4, 1, 0, Cell.part(PartKind.VENT));
 		RackScan scan = RackValidator.scan(world, new Pos(3, 3, 0));
 		assertTrue(scan.formed(), scan.problem().toString());
-		assertEquals(4096, scan.structure().ramMb());
+		assertEquals(5, scan.structure().memoryBanks());
 	}
 
 	@Test
 	void oversizedOrTouchingRacksDoNotForm() {
-		World tooLong = new World().shell(8, 3, 3, CasingTier.IRON);
+		World tooLong = new World().shell(10, 3, 3, CasingTier.NETHERITE);
 		tooLong.set(1, 1, 0, Cell.part(PartKind.CORE));
 		assertEquals(Problem.TOO_LARGE, RackValidator.scan(tooLong, CORE).problem());
 

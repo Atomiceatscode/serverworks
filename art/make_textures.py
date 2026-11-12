@@ -188,6 +188,35 @@ def world_drive():
     return c
 
 
+STICK_LABELS = {1: "#9aa0aa", 2: "#5fb0e8", 4: "#63e08a", 8: "#e8b44a", 16: "#c066e0"}
+
+
+def memory_stick(gigabytes):
+    """A RAM module: green board, black chips, gold contacts, and a coloured label by size."""
+    c = Canvas(16, 16)
+    board = rgba("#2f8f5a")
+    c.rect(1, 4, 14, 11, shade(board, -45))
+    c.rect(2, 5, 13, 10, board)
+    c.rect(2, 5, 13, 5, shade(board, 30))
+    for x in (3, 6, 9):
+        c.rect(x, 6, x + 1, 8, rgba("#15181f"))
+        c.set(x, 6, rgba("#2a2f3a"))
+    label = rgba(STICK_LABELS[gigabytes])
+    c.rect(12, 6, 12, 8, label)
+    c.rect(11, 6, 11, 8, shade(label, -40))
+    gold = rgba("#e6c04a")
+    for x in range(2, 14, 2):
+        c.set(x, 11, gold)
+    c.set(7, 11, shade(board, -45))
+    # Bigger sticks carry more chips on a second row.
+    if gigabytes >= 4:
+        for x in (3, 6, 9):
+            c.set(x, 9, rgba("#15181f"))
+    if gigabytes >= 16:
+        c.rect(2, 4, 13, 4, rgba("#c9a24a"))
+    return c
+
+
 def manual():
     """A slate-blue binder with a rack emblem and a bookmark."""
     c = Canvas(16, 16)
@@ -216,6 +245,8 @@ def make_items():
     cartridge().save("item/pack_cartridge.png")
     link_card().save("item/link_card.png")
     config_card().save("item/config_card.png")
+    for gigabytes in STICK_LABELS:
+        memory_stick(gigabytes).save(f"item/memory_stick_{gigabytes}gb.png")
     world_drive().save("item/world_drive.png")
     manual().save("item/operators_manual.png")
 

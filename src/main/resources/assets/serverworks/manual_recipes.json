@@ -138,6 +138,24 @@
       ]
     },
     {
+      "result": "serverworks:advanced_drive_bay",
+      "count": 1,
+      "shape": "shapeless",
+      "items": [
+        "serverworks:drive_bay",
+        "minecraft:diamond"
+      ]
+    },
+    {
+      "result": "serverworks:elite_drive_bay",
+      "count": 1,
+      "shape": "shapeless",
+      "items": [
+        "serverworks:advanced_drive_bay",
+        "minecraft:netherite_ingot"
+      ]
+    },
+    {
       "result": "serverworks:memory_bank",
       "count": 1,
       "shape": "shaped",
@@ -151,6 +169,57 @@
         "minecraft:gold_ingot",
         "minecraft:redstone",
         "minecraft:gold_ingot"
+      ]
+    },
+    {
+      "result": "serverworks:memory_stick_1gb",
+      "count": 1,
+      "shape": "shapeless",
+      "items": [
+        "minecraft:iron_ingot",
+        "minecraft:redstone",
+        "minecraft:redstone",
+        "minecraft:gold_nugget"
+      ]
+    },
+    {
+      "result": "serverworks:memory_stick_2gb",
+      "count": 1,
+      "shape": "shapeless",
+      "items": [
+        "serverworks:memory_stick_1gb",
+        "serverworks:memory_stick_1gb",
+        "minecraft:gold_ingot"
+      ]
+    },
+    {
+      "result": "serverworks:memory_stick_4gb",
+      "count": 1,
+      "shape": "shapeless",
+      "items": [
+        "serverworks:memory_stick_2gb",
+        "serverworks:memory_stick_2gb",
+        "minecraft:diamond"
+      ]
+    },
+    {
+      "result": "serverworks:memory_stick_8gb",
+      "count": 1,
+      "shape": "shapeless",
+      "items": [
+        "serverworks:memory_stick_4gb",
+        "serverworks:memory_stick_4gb",
+        "minecraft:emerald"
+      ]
+    },
+    {
+      "result": "serverworks:memory_stick_16gb",
+      "count": 1,
+      "shape": "shapeless",
+      "items": [
+        "serverworks:memory_stick_8gb",
+        "serverworks:memory_stick_8gb",
+        "minecraft:netherite_scrap"
       ]
     },
     {

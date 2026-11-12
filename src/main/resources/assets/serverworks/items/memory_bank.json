@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "serverworks:block/memory_bank"
+    "model": "serverworks:block/memory_bank_4_on"
   }
 }

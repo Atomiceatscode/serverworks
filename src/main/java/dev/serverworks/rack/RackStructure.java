@@ -22,9 +22,6 @@ public record RackStructure(
 		List<Pos> gateways,
 		List<Pos> displays) {
 
-	public static final int DISKS_PER_BAY = 8;
-	private static final int BASE_RAM_MB = 1024;
-	private static final int RAM_PER_BANK_MB = 1024;
 
 	public RackStructure {
 		members = List.copyOf(members);
@@ -49,18 +46,5 @@ public record RackStructure(
 		return pos.x() >= min.x() && pos.x() <= max.x()
 				&& pos.y() >= min.y() && pos.y() <= max.y()
 				&& pos.z() >= min.z() && pos.z() <= max.z();
-	}
-
-	public int diskSlots() {
-		return driveBays.size() * DISKS_PER_BAY;
-	}
-
-	/** Memory the child server gets: a base amount plus each bank, up to what the frame allows. */
-	public int ramMb() {
-		return Math.min(tier.maxRamMb(), BASE_RAM_MB + memoryBanks * RAM_PER_BANK_MB);
-	}
-
-	public int maxPlayers() {
-		return tier.maxPlayers();
 	}
 }

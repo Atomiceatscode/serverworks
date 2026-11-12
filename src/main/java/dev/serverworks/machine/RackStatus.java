@@ -38,39 +38,37 @@ public record RackStatus(
 		List<DiskLabel> disks,
 		int linkCount,
 		boolean redstoneControl,
-		boolean throughGateway) {
+		boolean throughGateway,
+		int diskSlots) {
 
 	/** Far more than the largest rack can hold; a bound for reading untrusted lengths. */
 	private static final int MAX_DISKS = 2048;
 
 	public static final RackStatus UNKNOWN = new RackStatus(Problem.TOO_SMALL, null, null, null, 0, 0, 0, 0, 0, 0, 0, 0,
-			List.of(), 0, false, false);
+			List.of(), 0, false, false, 0);
 
 	public RackStatus {
 		disks = List.copyOf(disks);
 	}
 
 	public static RackStatus of(RackScan scan, List<DiskLabel> disks, int linkCount, boolean redstoneControl,
-			boolean throughGateway) {
+			boolean throughGateway, int ramMb, int maxPlayers, int diskSlots) {
 		if (!scan.formed()) {
 			BlockPos pos = scan.problemPos() == null ? null
 					: new BlockPos(scan.problemPos().x(), scan.problemPos().y(), scan.problemPos().z());
 			return new RackStatus(scan.problem(), pos, null, null, 0, 0, 0, 0, 0, 0, 0, 0, List.of(), 0, redstoneControl,
-					throughGateway);
+					throughGateway, 0);
 		}
 		RackStructure rack = scan.structure();
 		return new RackStatus(Problem.NONE, null, rack.platform(), rack.tier(), rack.sizeX(), rack.sizeY(), rack.sizeZ(),
-				rack.driveBays().size(), rack.memoryBanks(), rack.vents(), rack.ramMb(), rack.maxPlayers(), disks, linkCount,
-				redstoneControl, throughGateway);
+				rack.driveBays().size(), rack.memoryBanks(), rack.vents(), ramMb, maxPlayers, disks, linkCount,
+				redstoneControl, throughGateway, diskSlots);
 	}
 
 	public boolean formed() {
 		return problem == Problem.NONE;
 	}
 
-	public int diskSlots() {
-		return driveBays * RackStructure.DISKS_PER_BAY;
-	}
 
 	public int ventsNeeded() {
 		return RackValidator.ventsNeeded(driveBays, memoryBanks);
@@ -104,6 +102,7 @@ public record RackStatus(
 		out.writeVarInt(linkCount);
 		out.writeBoolean(redstoneControl);
 		out.writeBoolean(throughGateway);
+		out.writeVarInt(diskSlots);
 	}
 
 	public static RackStatus read(FriendlyByteBuf in) {
@@ -128,7 +127,7 @@ public record RackStatus(
 			disks.add(DiskLabel.STREAM_CODEC.decode(in));
 		}
 		return new RackStatus(problem, problemPos, platform, tier, sizeX, sizeY, sizeZ, driveBays, memoryBanks, vents,
-				ramMb, maxPlayers, disks, in.readVarInt(), in.readBoolean(), in.readBoolean());
+				ramMb, maxPlayers, disks, in.readVarInt(), in.readBoolean(), in.readBoolean(), in.readVarInt());
 	}
 
 	private static <T> @Nullable T pick(T[] values, int indexPlusOne) {

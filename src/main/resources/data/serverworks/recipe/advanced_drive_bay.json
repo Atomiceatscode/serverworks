@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_transmute",
+  "category": "misc",
+  "input": "serverworks:drive_bay",
+  "material": "minecraft:diamond",
+  "result": {
+    "id": "serverworks:advanced_drive_bay"
+  }
+}

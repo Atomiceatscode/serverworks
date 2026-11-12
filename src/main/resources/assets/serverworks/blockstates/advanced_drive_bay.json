@@ -1,0 +1,832 @@
+{
+  "variants": {
+    "active=false,disks=0,facing=north,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_0"
+    },
+    "active=false,disks=0,facing=north,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_0_on"
+    },
+    "active=true,disks=0,facing=north,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_0"
+    },
+    "active=true,disks=0,facing=north,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_0_active"
+    },
+    "active=false,disks=0,facing=east,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_0",
+      "y": 90
+    },
+    "active=false,disks=0,facing=east,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_0_on",
+      "y": 90
+    },
+    "active=true,disks=0,facing=east,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_0",
+      "y": 90
+    },
+    "active=true,disks=0,facing=east,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_0_active",
+      "y": 90
+    },
+    "active=false,disks=0,facing=south,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_0",
+      "y": 180
+    },
+    "active=false,disks=0,facing=south,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_0_on",
+      "y": 180
+    },
+    "active=true,disks=0,facing=south,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_0",
+      "y": 180
+    },
+    "active=true,disks=0,facing=south,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_0_active",
+      "y": 180
+    },
+    "active=false,disks=0,facing=west,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_0",
+      "y": 270
+    },
+    "active=false,disks=0,facing=west,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_0_on",
+      "y": 270
+    },
+    "active=true,disks=0,facing=west,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_0",
+      "y": 270
+    },
+    "active=true,disks=0,facing=west,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_0_active",
+      "y": 270
+    },
+    "active=false,disks=0,facing=up,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_0",
+      "x": 270
+    },
+    "active=false,disks=0,facing=up,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_0_on",
+      "x": 270
+    },
+    "active=true,disks=0,facing=up,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_0",
+      "x": 270
+    },
+    "active=true,disks=0,facing=up,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_0_active",
+      "x": 270
+    },
+    "active=false,disks=0,facing=down,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_0",
+      "x": 90
+    },
+    "active=false,disks=0,facing=down,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_0_on",
+      "x": 90
+    },
+    "active=true,disks=0,facing=down,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_0",
+      "x": 90
+    },
+    "active=true,disks=0,facing=down,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_0_active",
+      "x": 90
+    },
+    "active=false,disks=1,facing=north,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_1"
+    },
+    "active=false,disks=1,facing=north,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_1_on"
+    },
+    "active=true,disks=1,facing=north,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_1"
+    },
+    "active=true,disks=1,facing=north,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_1_active"
+    },
+    "active=false,disks=1,facing=east,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_1",
+      "y": 90
+    },
+    "active=false,disks=1,facing=east,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_1_on",
+      "y": 90
+    },
+    "active=true,disks=1,facing=east,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_1",
+      "y": 90
+    },
+    "active=true,disks=1,facing=east,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_1_active",
+      "y": 90
+    },
+    "active=false,disks=1,facing=south,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_1",
+      "y": 180
+    },
+    "active=false,disks=1,facing=south,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_1_on",
+      "y": 180
+    },
+    "active=true,disks=1,facing=south,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_1",
+      "y": 180
+    },
+    "active=true,disks=1,facing=south,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_1_active",
+      "y": 180
+    },
+    "active=false,disks=1,facing=west,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_1",
+      "y": 270
+    },
+    "active=false,disks=1,facing=west,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_1_on",
+      "y": 270
+    },
+    "active=true,disks=1,facing=west,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_1",
+      "y": 270
+    },
+    "active=true,disks=1,facing=west,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_1_active",
+      "y": 270
+    },
+    "active=false,disks=1,facing=up,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_1",
+      "x": 270
+    },
+    "active=false,disks=1,facing=up,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_1_on",
+      "x": 270
+    },
+    "active=true,disks=1,facing=up,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_1",
+      "x": 270
+    },
+    "active=true,disks=1,facing=up,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_1_active",
+      "x": 270
+    },
+    "active=false,disks=1,facing=down,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_1",
+      "x": 90
+    },
+    "active=false,disks=1,facing=down,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_1_on",
+      "x": 90
+    },
+    "active=true,disks=1,facing=down,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_1",
+      "x": 90
+    },
+    "active=true,disks=1,facing=down,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_1_active",
+      "x": 90
+    },
+    "active=false,disks=2,facing=north,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_2"
+    },
+    "active=false,disks=2,facing=north,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_2_on"
+    },
+    "active=true,disks=2,facing=north,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_2"
+    },
+    "active=true,disks=2,facing=north,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_2_active"
+    },
+    "active=false,disks=2,facing=east,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_2",
+      "y": 90
+    },
+    "active=false,disks=2,facing=east,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_2_on",
+      "y": 90
+    },
+    "active=true,disks=2,facing=east,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_2",
+      "y": 90
+    },
+    "active=true,disks=2,facing=east,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_2_active",
+      "y": 90
+    },
+    "active=false,disks=2,facing=south,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_2",
+      "y": 180
+    },
+    "active=false,disks=2,facing=south,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_2_on",
+      "y": 180
+    },
+    "active=true,disks=2,facing=south,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_2",
+      "y": 180
+    },
+    "active=true,disks=2,facing=south,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_2_active",
+      "y": 180
+    },
+    "active=false,disks=2,facing=west,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_2",
+      "y": 270
+    },
+    "active=false,disks=2,facing=west,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_2_on",
+      "y": 270
+    },
+    "active=true,disks=2,facing=west,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_2",
+      "y": 270
+    },
+    "active=true,disks=2,facing=west,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_2_active",
+      "y": 270
+    },
+    "active=false,disks=2,facing=up,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_2",
+      "x": 270
+    },
+    "active=false,disks=2,facing=up,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_2_on",
+      "x": 270
+    },
+    "active=true,disks=2,facing=up,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_2",
+      "x": 270
+    },
+    "active=true,disks=2,facing=up,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_2_active",
+      "x": 270
+    },
+    "active=false,disks=2,facing=down,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_2",
+      "x": 90
+    },
+    "active=false,disks=2,facing=down,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_2_on",
+      "x": 90
+    },
+    "active=true,disks=2,facing=down,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_2",
+      "x": 90
+    },
+    "active=true,disks=2,facing=down,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_2_active",
+      "x": 90
+    },
+    "active=false,disks=3,facing=north,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_3"
+    },
+    "active=false,disks=3,facing=north,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_3_on"
+    },
+    "active=true,disks=3,facing=north,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_3"
+    },
+    "active=true,disks=3,facing=north,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_3_active"
+    },
+    "active=false,disks=3,facing=east,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_3",
+      "y": 90
+    },
+    "active=false,disks=3,facing=east,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_3_on",
+      "y": 90
+    },
+    "active=true,disks=3,facing=east,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_3",
+      "y": 90
+    },
+    "active=true,disks=3,facing=east,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_3_active",
+      "y": 90
+    },
+    "active=false,disks=3,facing=south,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_3",
+      "y": 180
+    },
+    "active=false,disks=3,facing=south,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_3_on",
+      "y": 180
+    },
+    "active=true,disks=3,facing=south,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_3",
+      "y": 180
+    },
+    "active=true,disks=3,facing=south,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_3_active",
+      "y": 180
+    },
+    "active=false,disks=3,facing=west,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_3",
+      "y": 270
+    },
+    "active=false,disks=3,facing=west,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_3_on",
+      "y": 270
+    },
+    "active=true,disks=3,facing=west,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_3",
+      "y": 270
+    },
+    "active=true,disks=3,facing=west,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_3_active",
+      "y": 270
+    },
+    "active=false,disks=3,facing=up,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_3",
+      "x": 270
+    },
+    "active=false,disks=3,facing=up,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_3_on",
+      "x": 270
+    },
+    "active=true,disks=3,facing=up,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_3",
+      "x": 270
+    },
+    "active=true,disks=3,facing=up,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_3_active",
+      "x": 270
+    },
+    "active=false,disks=3,facing=down,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_3",
+      "x": 90
+    },
+    "active=false,disks=3,facing=down,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_3_on",
+      "x": 90
+    },
+    "active=true,disks=3,facing=down,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_3",
+      "x": 90
+    },
+    "active=true,disks=3,facing=down,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_3_active",
+      "x": 90
+    },
+    "active=false,disks=4,facing=north,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_4"
+    },
+    "active=false,disks=4,facing=north,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_4_on"
+    },
+    "active=true,disks=4,facing=north,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_4"
+    },
+    "active=true,disks=4,facing=north,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_4_active"
+    },
+    "active=false,disks=4,facing=east,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_4",
+      "y": 90
+    },
+    "active=false,disks=4,facing=east,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_4_on",
+      "y": 90
+    },
+    "active=true,disks=4,facing=east,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_4",
+      "y": 90
+    },
+    "active=true,disks=4,facing=east,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_4_active",
+      "y": 90
+    },
+    "active=false,disks=4,facing=south,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_4",
+      "y": 180
+    },
+    "active=false,disks=4,facing=south,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_4_on",
+      "y": 180
+    },
+    "active=true,disks=4,facing=south,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_4",
+      "y": 180
+    },
+    "active=true,disks=4,facing=south,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_4_active",
+      "y": 180
+    },
+    "active=false,disks=4,facing=west,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_4",
+      "y": 270
+    },
+    "active=false,disks=4,facing=west,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_4_on",
+      "y": 270
+    },
+    "active=true,disks=4,facing=west,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_4",
+      "y": 270
+    },
+    "active=true,disks=4,facing=west,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_4_active",
+      "y": 270
+    },
+    "active=false,disks=4,facing=up,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_4",
+      "x": 270
+    },
+    "active=false,disks=4,facing=up,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_4_on",
+      "x": 270
+    },
+    "active=true,disks=4,facing=up,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_4",
+      "x": 270
+    },
+    "active=true,disks=4,facing=up,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_4_active",
+      "x": 270
+    },
+    "active=false,disks=4,facing=down,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_4",
+      "x": 90
+    },
+    "active=false,disks=4,facing=down,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_4_on",
+      "x": 90
+    },
+    "active=true,disks=4,facing=down,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_4",
+      "x": 90
+    },
+    "active=true,disks=4,facing=down,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_4_active",
+      "x": 90
+    },
+    "active=false,disks=5,facing=north,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_5"
+    },
+    "active=false,disks=5,facing=north,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_5_on"
+    },
+    "active=true,disks=5,facing=north,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_5"
+    },
+    "active=true,disks=5,facing=north,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_5_active"
+    },
+    "active=false,disks=5,facing=east,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_5",
+      "y": 90
+    },
+    "active=false,disks=5,facing=east,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_5_on",
+      "y": 90
+    },
+    "active=true,disks=5,facing=east,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_5",
+      "y": 90
+    },
+    "active=true,disks=5,facing=east,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_5_active",
+      "y": 90
+    },
+    "active=false,disks=5,facing=south,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_5",
+      "y": 180
+    },
+    "active=false,disks=5,facing=south,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_5_on",
+      "y": 180
+    },
+    "active=true,disks=5,facing=south,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_5",
+      "y": 180
+    },
+    "active=true,disks=5,facing=south,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_5_active",
+      "y": 180
+    },
+    "active=false,disks=5,facing=west,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_5",
+      "y": 270
+    },
+    "active=false,disks=5,facing=west,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_5_on",
+      "y": 270
+    },
+    "active=true,disks=5,facing=west,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_5",
+      "y": 270
+    },
+    "active=true,disks=5,facing=west,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_5_active",
+      "y": 270
+    },
+    "active=false,disks=5,facing=up,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_5",
+      "x": 270
+    },
+    "active=false,disks=5,facing=up,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_5_on",
+      "x": 270
+    },
+    "active=true,disks=5,facing=up,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_5",
+      "x": 270
+    },
+    "active=true,disks=5,facing=up,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_5_active",
+      "x": 270
+    },
+    "active=false,disks=5,facing=down,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_5",
+      "x": 90
+    },
+    "active=false,disks=5,facing=down,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_5_on",
+      "x": 90
+    },
+    "active=true,disks=5,facing=down,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_5",
+      "x": 90
+    },
+    "active=true,disks=5,facing=down,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_5_active",
+      "x": 90
+    },
+    "active=false,disks=6,facing=north,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_6"
+    },
+    "active=false,disks=6,facing=north,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_6_on"
+    },
+    "active=true,disks=6,facing=north,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_6"
+    },
+    "active=true,disks=6,facing=north,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_6_active"
+    },
+    "active=false,disks=6,facing=east,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_6",
+      "y": 90
+    },
+    "active=false,disks=6,facing=east,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_6_on",
+      "y": 90
+    },
+    "active=true,disks=6,facing=east,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_6",
+      "y": 90
+    },
+    "active=true,disks=6,facing=east,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_6_active",
+      "y": 90
+    },
+    "active=false,disks=6,facing=south,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_6",
+      "y": 180
+    },
+    "active=false,disks=6,facing=south,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_6_on",
+      "y": 180
+    },
+    "active=true,disks=6,facing=south,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_6",
+      "y": 180
+    },
+    "active=true,disks=6,facing=south,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_6_active",
+      "y": 180
+    },
+    "active=false,disks=6,facing=west,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_6",
+      "y": 270
+    },
+    "active=false,disks=6,facing=west,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_6_on",
+      "y": 270
+    },
+    "active=true,disks=6,facing=west,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_6",
+      "y": 270
+    },
+    "active=true,disks=6,facing=west,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_6_active",
+      "y": 270
+    },
+    "active=false,disks=6,facing=up,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_6",
+      "x": 270
+    },
+    "active=false,disks=6,facing=up,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_6_on",
+      "x": 270
+    },
+    "active=true,disks=6,facing=up,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_6",
+      "x": 270
+    },
+    "active=true,disks=6,facing=up,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_6_active",
+      "x": 270
+    },
+    "active=false,disks=6,facing=down,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_6",
+      "x": 90
+    },
+    "active=false,disks=6,facing=down,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_6_on",
+      "x": 90
+    },
+    "active=true,disks=6,facing=down,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_6",
+      "x": 90
+    },
+    "active=true,disks=6,facing=down,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_6_active",
+      "x": 90
+    },
+    "active=false,disks=7,facing=north,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_7"
+    },
+    "active=false,disks=7,facing=north,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_7_on"
+    },
+    "active=true,disks=7,facing=north,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_7"
+    },
+    "active=true,disks=7,facing=north,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_7_active"
+    },
+    "active=false,disks=7,facing=east,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_7",
+      "y": 90
+    },
+    "active=false,disks=7,facing=east,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_7_on",
+      "y": 90
+    },
+    "active=true,disks=7,facing=east,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_7",
+      "y": 90
+    },
+    "active=true,disks=7,facing=east,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_7_active",
+      "y": 90
+    },
+    "active=false,disks=7,facing=south,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_7",
+      "y": 180
+    },
+    "active=false,disks=7,facing=south,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_7_on",
+      "y": 180
+    },
+    "active=true,disks=7,facing=south,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_7",
+      "y": 180
+    },
+    "active=true,disks=7,facing=south,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_7_active",
+      "y": 180
+    },
+    "active=false,disks=7,facing=west,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_7",
+      "y": 270
+    },
+    "active=false,disks=7,facing=west,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_7_on",
+      "y": 270
+    },
+    "active=true,disks=7,facing=west,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_7",
+      "y": 270
+    },
+    "active=true,disks=7,facing=west,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_7_active",
+      "y": 270
+    },
+    "active=false,disks=7,facing=up,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_7",
+      "x": 270
+    },
+    "active=false,disks=7,facing=up,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_7_on",
+      "x": 270
+    },
+    "active=true,disks=7,facing=up,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_7",
+      "x": 270
+    },
+    "active=true,disks=7,facing=up,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_7_active",
+      "x": 270
+    },
+    "active=false,disks=7,facing=down,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_7",
+      "x": 90
+    },
+    "active=false,disks=7,facing=down,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_7_on",
+      "x": 90
+    },
+    "active=true,disks=7,facing=down,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_7",
+      "x": 90
+    },
+    "active=true,disks=7,facing=down,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_7_active",
+      "x": 90
+    },
+    "active=false,disks=8,facing=north,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_8"
+    },
+    "active=false,disks=8,facing=north,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_8_on"
+    },
+    "active=true,disks=8,facing=north,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_8"
+    },
+    "active=true,disks=8,facing=north,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_8_active"
+    },
+    "active=false,disks=8,facing=east,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_8",
+      "y": 90
+    },
+    "active=false,disks=8,facing=east,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_8_on",
+      "y": 90
+    },
+    "active=true,disks=8,facing=east,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_8",
+      "y": 90
+    },
+    "active=true,disks=8,facing=east,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_8_active",
+      "y": 90
+    },
+    "active=false,disks=8,facing=south,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_8",
+      "y": 180
+    },
+    "active=false,disks=8,facing=south,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_8_on",
+      "y": 180
+    },
+    "active=true,disks=8,facing=south,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_8",
+      "y": 180
+    },
+    "active=true,disks=8,facing=south,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_8_active",
+      "y": 180
+    },
+    "active=false,disks=8,facing=west,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_8",
+      "y": 270
+    },
+    "active=false,disks=8,facing=west,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_8_on",
+      "y": 270
+    },
+    "active=true,disks=8,facing=west,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_8",
+      "y": 270
+    },
+    "active=true,disks=8,facing=west,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_8_active",
+      "y": 270
+    },
+    "active=false,disks=8,facing=up,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_8",
+      "x": 270
+    },
+    "active=false,disks=8,facing=up,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_8_on",
+      "x": 270
+    },
+    "active=true,disks=8,facing=up,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_8",
+      "x": 270
+    },
+    "active=true,disks=8,facing=up,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_8_active",
+      "x": 270
+    },
+    "active=false,disks=8,facing=down,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_8",
+      "x": 90
+    },
+    "active=false,disks=8,facing=down,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_8_on",
+      "x": 90
+    },
+    "active=true,disks=8,facing=down,formed=false": {
+      "model": "serverworks:block/advanced_drive_bay_8",
+      "x": 90
+    },
+    "active=true,disks=8,facing=down,formed=true": {
+      "model": "serverworks:block/advanced_drive_bay_8_active",
+      "x": 90
+    }
+  }
+}

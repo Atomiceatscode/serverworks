@@ -1,7 +1,7 @@
 {
   "parent": "serverworks:block/rack_component",
   "textures": {
-    "front": "serverworks:block/memory_bank_front_on",
+    "front": "serverworks:block/elite_drive_bay_front_0",
     "side": "serverworks:block/rack_panel",
     "frame": "serverworks:block/rack_frame"
   }

@@ -99,6 +99,64 @@ public final class PolishVisualTest implements FabricClientGameTest {
 			context.waitTicks(10);
 			context.takeScreenshot("polish_2_formed_with_jade");
 
+			// RAM sticks: a 4 GB stick in the Memory Bank makes it a 5 GB, 50-player rack.
+			BlockPos bankPos = base.offset(1, 1, 1);
+			int ram = server.computeOnServer(s -> {
+				ServerLevel level = s.overworld();
+				((dev.serverworks.machine.MemoryBankBlockEntity) level.getBlockEntity(bankPos))
+						.setItem(0, new ItemStack(ModItems.MEMORY_STICKS.get(4)));
+				var rackCore = (dev.serverworks.machine.ServerCoreBlockEntity) level.getBlockEntity(core);
+				rackCore.rescan();
+				return rackCore.ramMb(rackCore.lastScan().structure());
+			});
+			if (ram != 5 * 1024) {
+				throw new AssertionError("A 4 GB stick should give 5 GB, not " + ram + " MB");
+			}
+			server.runOnServer(s -> s.getPlayerList().getPlayers().getFirst()
+					.openMenu((net.minecraft.world.MenuProvider) s.overworld().getBlockEntity(bankPos)));
+			context.waitTicks(10);
+			context.takeScreenshot("polish_2b_memory_bank");
+			// Closed as a player would, so the server closes its side of the menu too.
+			context.runOnClient(client -> client.player.closeContainer());
+			context.waitTicks(3);
+
+			// Each Drive Bay tier opens with its own number of slots, and keeps its disks when broken.
+			int t = 0;
+			for (net.minecraft.world.level.block.Block tier : java.util.List.of(ModBlocks.DRIVE_BAY, ModBlocks.ADVANCED_DRIVE_BAY,
+					ModBlocks.ELITE_DRIVE_BAY)) {
+				BlockPos bayPos = base.offset(-4 - t * 2, 0, 0);
+				int index = t++;
+				server.runOnServer(s -> {
+					ServerLevel level = s.overworld();
+					level.setBlockAndUpdate(bayPos, facing(tier, Direction.NORTH));
+					var bay = (dev.serverworks.machine.DriveBayBlockEntity) level.getBlockEntity(bayPos);
+					bay.setItem(bay.getContainerSize() - 1, new ItemStack(ModItems.CONFIG_CARD));
+					s.getPlayerList().getPlayers().getFirst().openMenu(bay);
+				});
+				context.waitTicks(10);
+				context.takeScreenshot("polish_2c_drive_bay_" + (index + 1));
+				// Closed as a player would, so the server closes its side of the menu too.
+				context.runOnClient(client -> client.player.closeContainer());
+				context.waitTicks(3);
+				int kept = server.computeOnServer(s -> {
+					ServerLevel level = s.overworld();
+					level.destroyBlock(bayPos, true);
+					for (var entity : level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,
+							new net.minecraft.world.phys.AABB(bayPos).inflate(2))) {
+						ItemStack dropped = entity.getItem();
+						entity.discard();
+						if (dropped.is(tier.asItem())) {
+							var contents = dropped.get(net.minecraft.core.component.DataComponents.CONTAINER);
+							return contents == null ? 0 : (int) contents.nonEmptyItemCopyStream().count();
+						}
+					}
+					return -1;
+				});
+				if (kept != 1) {
+					throw new AssertionError(tier + " should drop itself with its card inside, got " + kept);
+				}
+			}
+
 			context.setScreen(ManualScreen::new);
 			// Opening a screen centres the mouse; move it off the pages so no tooltip covers them.
 			context.getInput().setCursorPos(0, 0);

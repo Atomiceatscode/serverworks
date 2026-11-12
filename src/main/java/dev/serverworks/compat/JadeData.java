@@ -35,7 +35,7 @@ public final class JadeData implements IServerDataProvider<BlockAccessor> {
 		data.putString("state", snapshot.state().name());
 		data.putInt("progress", snapshot.progress());
 		data.putInt("players", snapshot.playersOnline());
-		data.putInt("max", scan.structure().maxPlayers());
+		data.putInt("max", core.maxPlayers(scan.structure()));
 		data.putBoolean("asleep", snapshot.hibernated());
 	}
 

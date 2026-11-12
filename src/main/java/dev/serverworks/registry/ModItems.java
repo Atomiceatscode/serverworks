@@ -41,6 +41,22 @@ public final class ModItems {
 	public static final Item OPERATORS_MANUAL = register("operators_manual", dev.serverworks.item.OperatorsManualItem::new,
 			new Item.Properties().stacksTo(1), true);
 
+	/** RAM sticks for Memory Banks, by size in gigabytes. */
+	public static final java.util.Map<Integer, Item> MEMORY_STICKS = memorySticks();
+
+	private static java.util.Map<Integer, Item> memorySticks() {
+		java.util.Map<Integer, Item> sticks = new java.util.LinkedHashMap<>();
+		for (int gigabytes : new int[] {1, 2, 4, 8, 16}) {
+			Item.Properties properties = new Item.Properties().stacksTo(16);
+			if (gigabytes >= 8) {
+				properties = properties.rarity(gigabytes == 16 ? Rarity.EPIC : Rarity.RARE);
+			}
+			sticks.put(gigabytes, register("memory_stick_" + gigabytes + "gb",
+					p -> new dev.serverworks.item.MemoryStickItem(gigabytes, p), properties, true));
+		}
+		return sticks;
+	}
+
 	public static final Item SERVER_CORE = registerBlock(ModBlocks.SERVER_CORE, new Item.Properties().rarity(Rarity.UNCOMMON));
 
 	static {
@@ -48,6 +64,8 @@ public final class ModItems {
 		registerBlock(ModBlocks.RACK_CASINGS.get(CasingTier.DIAMOND), new Item.Properties());
 		registerBlock(ModBlocks.RACK_CASINGS.get(CasingTier.NETHERITE), new Item.Properties().fireResistant());
 		registerBlock(ModBlocks.DRIVE_BAY, new Item.Properties());
+		registerBlock(ModBlocks.ADVANCED_DRIVE_BAY, new Item.Properties().rarity(Rarity.UNCOMMON));
+		registerBlock(ModBlocks.ELITE_DRIVE_BAY, new Item.Properties().rarity(Rarity.RARE).fireResistant());
 		registerBlock(ModBlocks.MEMORY_BANK, new Item.Properties());
 		registerBlock(ModBlocks.VENT, new Item.Properties());
 		registerBlock(ModBlocks.GATEWAY, new Item.Properties());
