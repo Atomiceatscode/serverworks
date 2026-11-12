@@ -51,6 +51,8 @@ public final class RackServerVisualTest implements FabricClientGameTest {
 	private static final Platform PLATFORM = java.util.Optional.ofNullable(System.getenv("SERVERWORKS_TRIP_PLATFORM"))
 			.map(Platform::byId).orElse(Platform.PAPER);
 
+	private static final java.util.UUID TEST_DRIVE = java.util.UUID.fromString("0123abcd-1111-2222-3333-444455556666");
+
 	@Override
 	public void runTest(ClientGameTestContext context) {
 		if (TestFilter.skip(getClass())) {
@@ -100,6 +102,16 @@ public final class RackServerVisualTest implements FabricClientGameTest {
 					stack.set(ModComponents.DISK_LABEL, disks.get(i));
 					bay.setItem(i, stack);
 				}
+				// A Config Card and a World Drive ride along: hard, no PvP, and a superflat world of its own.
+				ItemStack card = new ItemStack(ModItems.CONFIG_CARD);
+				card.set(ModComponents.SERVER_SETTINGS, new dev.serverworks.item.ServerSettings(
+						dev.serverworks.item.ServerSettings.Difficulty.HARD, dev.serverworks.item.ServerSettings.GameMode.SURVIVAL,
+						false, false, false, false, 8, 8, 0, "A tested rack"));
+				bay.setItem(6, card);
+				ItemStack drive = new ItemStack(ModItems.WORLD_DRIVE);
+				drive.set(ModComponents.WORLD_DRIVE, new dev.serverworks.item.WorldDrive(TEST_DRIVE, "Test World", "4242",
+						dev.serverworks.item.WorldDrive.WorldType.FLAT, java.util.Optional.empty()));
+				bay.setItem(7, drive);
 				bay.setChanged();
 				return origin;
 			});
@@ -156,6 +168,27 @@ public final class RackServerVisualTest implements FabricClientGameTest {
 			}
 			context.waitTicks(5);
 			context.takeScreenshot("server_4_console");
+
+			// The card's settings and the drive's world reached the server.
+			java.nio.file.Path dir = dev.serverworks.host.Deployment.instanceDir(Serverworks.host().root(), rackId);
+			String properties;
+			try {
+				properties = java.nio.file.Files.readString(dir.resolve("server.properties"));
+			} catch (java.io.IOException e) {
+				throw new AssertionError("Could not read server.properties", e);
+			}
+			String driveLevel = "world-" + TEST_DRIVE.toString().replace("-", "").substring(0, 8);
+			for (String expected : new String[] {"difficulty=hard", "motd=A tested rack", "level-name=" + driveLevel,
+					"level-type=minecraft\\:flat", "level-seed=4242", "view-distance=8"}) {
+				if (!properties.contains(expected)) {
+					throw new AssertionError("server.properties should contain " + expected + ":\n" + properties);
+				}
+			}
+			if (!java.nio.file.Files.isDirectory(dir.resolve(driveLevel))) {
+				throw new AssertionError("The World Drive's world folder was not made");
+			}
+			context.waitFor(client -> screen(client).consoleLines().stream()
+					.anyMatch(l -> l.toLowerCase(java.util.Locale.ROOT).contains("pvp") && l.contains("false")), 20 * 30);
 			context.runOnClient(client -> screen(client).showConsole(false));
 			ServerInstance running = Serverworks.host().instances().peek(rackId);
 

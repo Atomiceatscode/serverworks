@@ -249,6 +249,8 @@ public final class ServerCoreBlockEntity extends BlockEntity implements MenuProv
 			String publicAddress = dev.serverworks.ServerworksConfig.get().publicAddress;
 			DisplayLine address = !level.getServer().isDedicatedServer()
 					? DisplayLine.of("serverworks.display.local", 0x9FB2DA, snapshot.port())
+					: !dev.serverworks.ServerworksConfig.get().directPorts
+					? DisplayLine.of("serverworks.display.gateway", 0x9FB2DA)
 					: publicAddress.isEmpty() ? DisplayLine.of("serverworks.display.port", 0x9FB2DA, snapshot.port())
 					: DisplayLine.of("serverworks.display.address", 0x9FB2DA, publicAddress, snapshot.port());
 			// Line three is left for the players' heads, drawn by the client.
@@ -266,6 +268,12 @@ public final class ServerCoreBlockEntity extends BlockEntity implements MenuProv
 			default -> DisplayLine.of(state.translationKey(), 0x6FC3FF);
 		};
 		return List.of(headline, DisplayLine.of(platform, 0xFFFFFF), DisplayLine.EMPTY);
+	}
+
+	/** True when players reach this rack only through a Gateway, on a dedicated server in one-port mode. */
+	private boolean throughGateway() {
+		return level instanceof ServerLevel serverLevel && serverLevel.getServer().isDedicatedServer()
+				&& !dev.serverworks.ServerworksConfig.get().directPorts;
 	}
 
 	/** "1.2 GB · up 3h 5m", or just the uptime when memory is unknown. */
@@ -401,7 +409,7 @@ public final class ServerCoreBlockEntity extends BlockEntity implements MenuProv
 			return RackStatus.UNKNOWN;
 		}
 		return RackStatus.of(scan, scan.formed() ? disks(scan.structure()) : List.of(),
-				scan.formed() ? links(scan.structure()).size() : 0, redstoneControl);
+				scan.formed() ? links(scan.structure()).size() : 0, redstoneControl, throughGateway());
 	}
 
 	/** The label of every disk in this rack's drive bays, in bay order. */

@@ -75,7 +75,11 @@ public final class RackGateway {
 		Component name = Component.translatable("serverworks.gateway.destination",
 				Component.translatable(scan.structure().platform().translationKey()));
 		dev.serverworks.ModAdvancements.award(player, dev.serverworks.ModAdvancements.GO_THROUGH);
-		ServerPlayNetworking.send(player, new GatewayTripPayload(snapshot.port(), name.getString()));
+		// On a dedicated server in one-port mode the player reconnects to this server with a
+		// ticket, and is passed through to the rack; otherwise they go to the rack's port.
+		boolean relay = player.level().getServer().isDedicatedServer() && !dev.serverworks.ServerworksConfig.get().directPorts;
+		String ticket = relay ? dev.serverworks.relay.RackRelay.issue(snapshot.port()) : "";
+		ServerPlayNetworking.send(player, new GatewayTripPayload(snapshot.port(), name.getString(), ticket));
 		Serverworks.LOGGER.info("{} went through the gateway at {} to port {}", player.getGameProfile().name(),
 				gatewayPos.toShortString(), snapshot.port());
 	}

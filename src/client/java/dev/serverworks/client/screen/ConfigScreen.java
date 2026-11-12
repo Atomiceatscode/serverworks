@@ -14,7 +14,7 @@ import java.util.List;
 
 /** Edits {@code config/serverworks.json}, the settings for racks run by this copy of the game. */
 public final class ConfigScreen extends Screen {
-	private static final int ROW = 24;
+	private static final int ROW = 22;
 	private static final int FIELD_WIDTH = 120;
 	private static final int TEXT = 0xFFE8ECF4;
 	private static final int MUTED = 0xFF8F9BB3;
@@ -30,6 +30,7 @@ public final class ConfigScreen extends Screen {
 	private @Nullable EditBox backupMinutes;
 	private @Nullable EditBox keepBackups;
 	private boolean operatorsOnly;
+	private boolean directPorts;
 
 	private record Row(Component label, Component hint, int y) {
 	}
@@ -38,6 +39,7 @@ public final class ConfigScreen extends Screen {
 		super(Component.translatable("serverworks.config.title"));
 		this.parent = parent;
 		this.operatorsOnly = config.operatorsOnly;
+		this.directPorts = config.directPorts;
 	}
 
 	@Override
@@ -62,6 +64,14 @@ public final class ConfigScreen extends Screen {
 		addRenderableWidget(CycleButton.onOffBuilder(operatorsOnly).displayOnlyValue()
 				.create(fieldX, y, FIELD_WIDTH, 20, Component.translatable("serverworks.config.operators_only"),
 						(button, value) -> operatorsOnly = value));
+		y += ROW;
+		rows.add(new Row(Component.translatable("serverworks.config.direct_ports"),
+				Component.translatable("serverworks.config.direct_ports.hint"), y));
+		addRenderableWidget(net.minecraft.client.gui.components.CycleButton.<Boolean>builder(direct -> Component.translatable(direct
+						? "serverworks.config.direct_ports.direct" : "serverworks.config.direct_ports.gateway"), directPorts)
+				.withValues(false, true).displayOnlyValue()
+				.create(fieldX, y, FIELD_WIDTH, 20, Component.translatable("serverworks.config.direct_ports"),
+						(button, value) -> directPorts = value));
 		y += ROW;
 		publicAddress = field("public_address", config.publicAddress, fieldX, y);
 		publicAddress.setMaxLength(253);
@@ -107,6 +117,7 @@ public final class ConfigScreen extends Screen {
 		config.backupMinutes = parse(backupMinutes, config.backupMinutes);
 		config.keepBackups = parse(keepBackups, config.keepBackups);
 		config.operatorsOnly = operatorsOnly;
+		config.directPorts = directPorts;
 		config.publicAddress = publicAddress == null ? "" : publicAddress.getValue().strip();
 		config.save();
 	}

@@ -180,6 +180,8 @@ public final class Deployment implements ServerInstance.Preparation {
 				case BUNGEECORD -> ProxyConfigs.bungeeCord(dir, request, request.asProxy());
 				default -> {
 					ProxyConfigs.backend(dir, request.platform(), request.asBackend());
+					ProxyConfigs.localOnly(dir, request.platform(),
+							request.asBackend() != null || "127.0.0.1".equals(request.bindAddress()));
 					writeProperties(dir);
 					importWorld(dir, progress);
 				}

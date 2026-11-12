@@ -79,6 +79,11 @@ public final class ManualScreen extends Screen {
 			new Page("proxies", List.of(ModItems.LINK_CARD, ModBlocks.PLATFORM_MODULES.get(Platform.VELOCITY),
 					ModBlocks.PLATFORM_MODULES.get(Platform.BUNGEECORD))),
 			new Page("modpacks", List.of(ModItems.PACK_CARTRIDGE)),
+			new Page("cards", List.of(ModItems.CONFIG_CARD, ModItems.WORLD_DRIVE)),
+			new Page("versions", List.of(ModItems.MOD_DISK, ModBlocks.DISK_WRITER, ModBlocks.SERVER_CORE)),
+			new Page("redstone", List.of(ModBlocks.SERVER_CORE, net.minecraft.world.item.Items.COMPARATOR,
+					net.minecraft.world.item.Items.LEVER)),
+			new Page("backups", List.of(ModBlocks.SERVER_CORE)),
 			new Page("limits", List.of(ModBlocks.MEMORY_BANK, ModBlocks.VENT)),
 			new Page("trouble", List.of(ModItems.WRENCH)));
 
@@ -135,12 +140,13 @@ public final class ManualScreen extends Screen {
 		left = (width - WIDTH) / 2;
 		top = (height - HEIGHT) / 2;
 		if (page < 0) {
-			int columnWidth = (WIDTH - 2 * PADDING - 6) / 2;
+			int columns = 3;
+			int columnWidth = (WIDTH - 2 * PADDING - 6 * (columns - 1)) / columns;
 			int entries = firstRecipePage + (pages.size() > firstRecipePage ? 1 : 0);
 			for (int i = 0; i < entries; i++) {
 				int index = i;
-				int column = i % 2;
-				int row = i / 2;
+				int column = i % columns;
+				int row = i / columns;
 				addRenderableWidget(Button.builder(Component.translatable("serverworks.manual." + pages.get(i).key() + ".short"),
 						button -> show(index))
 						.bounds(left + PADDING + column * (columnWidth + 6), top + 44 + row * 22, columnWidth, 20).build());

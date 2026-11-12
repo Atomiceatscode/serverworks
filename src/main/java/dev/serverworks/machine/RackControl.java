@@ -270,7 +270,8 @@ public final class RackControl {
 				rack.ramMb(),
 				rack.maxPlayers(),
 				port,
-				server.isDedicatedServer() ? "" : "127.0.0.1",
+				// Rack servers only listen on this computer unless direct ports were chosen.
+				server.isDedicatedServer() && dev.serverworks.ServerworksConfig.get().directPorts ? "" : "127.0.0.1",
 				// Matches the host, except in a development environment, whose players have no real accounts.
 				server.usesAuthentication() && !net.fabricmc.loader.api.FabricLoader.getInstance().isDevelopmentEnvironment(),
 				true,

@@ -129,6 +129,20 @@ public final class PolishVisualTest implements FabricClientGameTest {
 			context.waitTicks(5);
 			context.takeScreenshot("polish_5d_manual_modules");
 
+			// The Config Card and World Drive editors.
+			server.runOnServer(s -> s.getPlayerList().getPlayers().getFirst()
+					.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.CONFIG_CARD)));
+			context.waitTicks(5);
+			context.runOnClient(client -> dev.serverworks.ClientHooks.editConfigCard.accept(InteractionHand.MAIN_HAND));
+			context.waitTicks(5);
+			context.takeScreenshot("polish_5e_config_card");
+			server.runOnServer(s -> s.getPlayerList().getPlayers().getFirst()
+					.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.WORLD_DRIVE)));
+			context.waitTicks(5);
+			context.runOnClient(client -> dev.serverworks.ClientHooks.editWorldDrive.accept(InteractionHand.MAIN_HAND));
+			context.waitTicks(5);
+			context.takeScreenshot("polish_5f_world_drive");
+
 			context.setScreen(() -> new ConfigScreen(null));
 			context.waitTicks(5);
 			context.takeScreenshot("polish_6_config");

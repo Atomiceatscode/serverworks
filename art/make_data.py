@@ -623,12 +623,11 @@ MANUAL = {
                 "Every rack runs a real server on this computer, downloaded from the official sources and from "
                 "Modrinth, the catalog all the disks come from."),
     "disks": ("Disks and the Disk Writer",
-              "Craft Blank Disks, then put one in a Disk Writer. Search the catalog (type @name, or click an author, "
-              "to see one author's projects), click a project or drag it onto "
-              "the right-hand panel, and take the "
-              "written disk from the output slot. It carries the project's name and icon.\n"
-              "Write a modpack and you get a Pack Cartridge instead. Disks only name a project: the newest version "
-              "that suits your rack is chosen when the server starts."),
+              "Put a Blank Disk in a Disk Writer, search the catalog, click a project or drag it onto the right-hand "
+              "panel, and take the written disk. Type @name or click an author for one author's projects; the star "
+              "keeps favourites; collection:ID lists a Modrinth collection.\n"
+              "A modpack makes a Pack Cartridge. A disk takes the newest version that suits the rack, unless you "
+              "pin one under the project's name."),
     "building": ("Building a Rack",
                  "A rack is a hollow box of Rack Casing, 3 to 7 blocks along each side. Edges and corners must be "
                  "casing; components go on the faces; the inside stays empty.\n"
@@ -653,7 +652,8 @@ MANUAL = {
                  "takes commands. In singleplayer only you can start racks; on a server, only operators can."),
     "joining": ("Joining Your Server",
                 "Use the Gateway while the server runs: your world is saved and you arrive on the rack's server. "
-                "Press B there (change it in Controls), or press Escape and choose Return, to go back.\n"
+                "Press B there (change it in Controls), or press Escape and choose Return, to go back. On a "
+                "dedicated server you travel through the server's own port, so no other ports need opening.\n"
                 "If a disk needs to be installed by players too, the Gateway stays amber and names it. Save the "
                 "Client Pack from the Server Core and import it into the Modrinth App or Prism Launcher."),
     "proxies": ("Proxies and Link Cards",
@@ -666,6 +666,25 @@ MANUAL = {
                  "version and the rack's platform.\n"
                  "Its server-side mods and settings are installed when the server starts. Players need the whole "
                  "pack, which the Client Pack button saves for you."),
+    "cards": ("Config Cards and World Drives",
+              "Use a Config Card to choose a server's difficulty, game mode, PvP, keep inventory and more, then put "
+              "it in a Drive Bay. It applies the next time the rack starts.\n"
+              "A World Drive holds a world: name it, give it a seed and type, or copy one of your singleplayer "
+              "worlds onto it. In a Drive Bay, the rack plays its world; swap drives to switch worlds."),
+    "versions": ("Versions and Updates",
+                 "Under a project's name in the Disk Writer, choose a version to pin the disk to it. Unpinned disks "
+                 "always get the newest version that suits the rack.\n"
+                 "When newer versions are out, the Server Core marks those disks with a green arrow. Update moves "
+                 "pinned disks to the newest version and restarts a running server to install everything."),
+    "redstone": ("Redstone",
+                 "A comparator reading the Server Core gives 0 while the server is off, 1 when it runs with nobody "
+                 "on, and up to 15 as it fills.\n"
+                 "Turn on redstone control with the button next to Start: then a redstone signal starts the rack and "
+                 "losing it stops the rack. Only the owner or operators can turn it on."),
+    "backups": ("Backups",
+                "The Server Core's Backups tab saves a copy of the rack's world, even while it runs, and lists the "
+                "copies kept. Restore puts one back while the server is stopped; the world it replaces is kept too.\n"
+                "Automatic backups can be turned on in the settings, with how many to keep."),
     "limits": ("Sleep and Limits",
                "A server with nobody on it for ten minutes goes to sleep. Using its Gateway wakes it up.\n"
                "Up to six rack servers can run at once on one computer. Each keeps its world in the serverworks "
@@ -722,6 +741,12 @@ def manual_text():
     lang["serverworks.manual.recipes.modules"] = "Platform Modules"
     lang["serverworks.manual.recipes.modules.body"] = "its platform's item:"
     lang["serverworks.manual.recipes.shapeless"] = "Any order"
+    lang["serverworks.config.direct_ports"] = "Players reach racks"
+    lang["serverworks.config.direct_ports.gateway"] = "Through this server"
+    lang["serverworks.config.direct_ports.direct"] = "At their own ports"
+    lang["serverworks.config.direct_ports.hint"] = "On a dedicated server: through this server's own port (nothing else to open), or directly at each rack's port, which must then be reachable. Restart racks to apply."
+    lang["serverworks.display.gateway"] = "Join by the Gateway"
+    lang["serverworks.server_core.join_gateway"] = "Join through the Gateway"
     lang["serverworks.recipe_viewer.mod_disk"] = "Written in a Disk Writer: put in a Blank Disk, search Modrinth, pick a project and take the disk. It stands for that project on any rack."
     lang["serverworks.recipe_viewer.pack_cartridge"] = "Written in a Disk Writer from a Blank Disk by picking a modpack. A rack installs the pack's server side."
     lang["serverworks.recipe_viewer.config_card"] = "Use it to choose a server's difficulty, game mode, PvP and more, then put it in a rack's Drive Bay."
@@ -779,7 +804,8 @@ def manual_text():
     lang["serverworks.manual.recipes.disks"] = "Mod Disks and Pack Cartridges are not crafted: write them in the Disk Writer from a Blank Disk."
     shorts = {"welcome": "Welcome", "disks": "Disks", "building": "Building", "parts": "Components",
               "platforms": "Platforms", "starting": "Starting", "joining": "Joining", "proxies": "Proxies",
-              "modpacks": "Pack Cartridges", "limits": "Sleep and Limits", "trouble": "Troubleshooting"}
+              "modpacks": "Modpacks", "limits": "Limits", "trouble": "Help", "cards": "Cards", "versions": "Versions",
+              "redstone": "Redstone", "backups": "Backups"}
     for key, (title, body) in MANUAL.items():
         lang[f"serverworks.manual.{key}.title"] = title
         lang[f"serverworks.manual.{key}.short"] = shorts[key]

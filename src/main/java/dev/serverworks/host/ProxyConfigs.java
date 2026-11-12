@@ -121,6 +121,19 @@ public final class ProxyConfigs {
 		}
 	}
 
+	/**
+	 * A plugin server that only listens on this computer sees every player arrive from the
+	 * same address (through a Gateway or a proxy), so Bukkit's per-address connection
+	 * throttle would turn away players who join together. It is switched off there.
+	 */
+	static void localOnly(Path dir, Platform platform, boolean localOnly) throws IOException {
+		if (platform.group() != Platform.Group.PLUGIN || platform == Platform.SPONGE) {
+			return;
+		}
+		yaml(dir.resolve("bukkit.yml"), List.of(new Setting(List.of("settings", "connection-throttle"),
+				localOnly ? "-1" : "4000")));
+	}
+
 	private record Setting(List<String> path, String value) {
 	}
 

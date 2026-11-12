@@ -30,6 +30,17 @@ public final class Trips {
 
 	private static @Nullable Origin origin;
 	private static @Nullable String destination;
+	/** The server entry used for the trip; being connected with it means being on the rack. */
+	private static @Nullable ServerData tripTarget;
+	/** A one-port ticket for the next login handshake, then cleared. */
+	private static volatile @Nullable String pendingTicket;
+
+	/** Takes the ticket for the handshake being sent, if one is waiting. */
+	public static @Nullable String takeTicket() {
+		String ticket = pendingTicket;
+		pendingTicket = null;
+		return ticket;
+	}
 
 	private Trips() {
 	}
@@ -41,7 +52,7 @@ public final class Trips {
 	/** True while connected to the rack server a Gateway sent this player to. */
 	public static boolean onTrip() {
 		ServerData current = Minecraft.getInstance().getCurrentServer();
-		return origin != null && current != null && current.ip.equals(destination);
+		return origin != null && current != null && current == tripTarget;
 	}
 
 	public static void go(GatewayTripPayload trip) {
@@ -66,11 +77,22 @@ public final class Trips {
 			from = new Origin(null, current, current.name);
 		}
 		origin = from;
-		destination = host + ":" + trip.port();
+		ServerAddress address;
+		if (!trip.ticket().isEmpty() && from.server() != null && trip.ticket().matches("[0-9a-f]{32}")) {
+			// One-port mode: back to the same server, which passes this connection to the rack.
+			address = ServerAddress.parseString(from.server().ip);
+			pendingTicket = trip.ticket();
+		} else {
+			address = new ServerAddress(host, trip.port());
+			pendingTicket = null;
+		}
+		destination = address.getHost() + ":" + address.getPort();
 		ServerData target = new ServerData(trip.name(), destination, ServerData.Type.OTHER);
-		Serverworks.LOGGER.info("Travelling from {} to the rack server at {}", from.name(), destination);
+		tripTarget = target;
+		Serverworks.LOGGER.info("Travelling from {} to the rack server at {}{}", from.name(), destination,
+				pendingTicket != null ? " (through the server's own port)" : "");
 		minecraft.disconnectFromWorld(Component.translatable("serverworks.trip.leaving"));
-		ConnectScreen.startConnecting(new TitleScreen(), minecraft, new ServerAddress(host, trip.port()), target, false, null);
+		ConnectScreen.startConnecting(new TitleScreen(), minecraft, address, target, false, null);
 	}
 
 	/** Leaves the rack server and goes back to the world or server the trip started from. */
@@ -81,6 +103,8 @@ public final class Trips {
 		}
 		origin = null;
 		destination = null;
+		tripTarget = null;
+		pendingTicket = null;
 		Minecraft minecraft = Minecraft.getInstance();
 		if (minecraft.level != null) {
 			minecraft.disconnectFromWorld(Component.translatable("serverworks.trip.returning"));
@@ -98,6 +122,7 @@ public final class Trips {
 		if (origin != null && !onTrip()) {
 			origin = null;
 			destination = null;
+			tripTarget = null;
 		}
 	}
 }

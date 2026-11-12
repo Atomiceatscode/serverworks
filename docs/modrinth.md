@@ -21,6 +21,24 @@ been published.
 | Dependencies | Fabric API (required); Mod Menu, Jade (optional) |
 | Source | the project's Git repository, once published |
 
+## Version 1.1.0
+
+- File: `build/libs/serverworks-1.1.0.jar`
+- Release channel: Release
+- Changelog:
+  - One-port mode: on a dedicated server, players reach every rack through the server's
+    own port; racks need no ports opened.
+  - Config Card: difficulty, game mode, hardcore, PvP, keep inventory, flight, distances,
+    spawn protection and MOTD for a rack's server.
+  - World Drive: a world per drive, with a name, seed and type, or a copy of a
+    singleplayer world. Swap drives to switch worlds.
+  - Backups tab: back up while running, restore when stopped, optional automatic backups.
+  - Pin a disk to one version; the Server Core flags updates and applies them in one click.
+  - Redstone: comparators read how full a rack is, and a signal can start and stop it.
+  - Status Display: players' heads, memory and uptime.
+  - Disk Writer favourites, and Modrinth collections with `collection:ID`.
+  - JEI and REI information pages; new manual pages for everything above.
+
 ## Version 1.0.1
 
 - File: `build/libs/serverworks-1.0.1.jar`

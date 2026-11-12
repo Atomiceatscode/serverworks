@@ -34,7 +34,13 @@ public final class ServerworksConfig {
 	public int backupMinutes = 0;
 	/** How many backups to keep per rack; older ones are deleted. */
 	public int keepBackups = 10;
-	/** On a dedicated server, the address players use to reach it, shown with each rack's port. */
+	/**
+	 * On a dedicated server, false (the default) passes Gateway players through this server's
+	 * own port, so racks need no ports of their own opened. True lets players connect to each
+	 * rack's port directly instead; those ports must then be reachable.
+	 */
+	public boolean directPorts = false;
+	/** With direct ports, the address players use to reach this server, shown with each rack's port. */
 	public String publicAddress = "";
 
 	public static ServerworksConfig get() {

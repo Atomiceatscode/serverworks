@@ -531,7 +531,9 @@ public final class ServerCoreScreen extends AbstractContainerScreen<ServerCoreMe
 			return problemText();
 		}
 		if (showServer && state == State.RUNNING) {
-			Component where = minecraft.hasSingleplayerServer()
+			Component where = status.throughGateway()
+					? Component.translatable("serverworks.server_core.join_gateway")
+					: minecraft.hasSingleplayerServer()
 					? Component.translatable("serverworks.server_core.join_local", instance.port())
 					: Component.translatable("serverworks.server_core.join_port", instance.port());
 			if (instance.playersOnline() >= 0) {
