@@ -82,10 +82,10 @@ public final class ConfigCardScreen extends Screen {
 		y += 24;
 		addRenderableWidget(CycleButton.<Integer>builder(v -> Component.translatable("options.chunks", v), viewDistance)
 				.withValues(DISTANCES)
-				.create(left, y, COLUMN, 20, Component.translatable("options.renderDistance"), (b, v) -> viewDistance = v));
+				.create(left, y, COLUMN, 20, Component.translatable("serverworks.config_card.view"), (b, v) -> viewDistance = v));
 		addRenderableWidget(CycleButton.<Integer>builder(v -> Component.translatable("options.chunks", v), simulationDistance)
 				.withValues(DISTANCES)
-				.create(right, y, COLUMN, 20, Component.translatable("options.simulationDistance"), (b, v) -> simulationDistance = v));
+				.create(right, y, COLUMN, 20, Component.translatable("serverworks.config_card.simulation"), (b, v) -> simulationDistance = v));
 		y += 24;
 		addRenderableWidget(CycleButton.<Integer>builder(v -> Component.literal(v == 0 ? "Off" : v + ""), spawnProtection)
 				.withValues(PROTECTION)
@@ -115,8 +115,9 @@ public final class ConfigCardScreen extends Screen {
 	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
 		super.extractRenderState(graphics, mouseX, mouseY, partialTick);
 		graphics.centeredText(font, title, width / 2, height / 2 - 112, 0xFFFFFFFF);
+		// The label sits just above the message box, which starts 40 below the middle.
 		graphics.text(font, Component.translatable("serverworks.config_card.motd"), width / 2 - COLUMN - GAP / 2,
-				height / 2 + 32 - 11, 0xFFA0A0A0, false);
+				height / 2 + 29, 0xFFA0A0A0, false);
 	}
 
 	@Override

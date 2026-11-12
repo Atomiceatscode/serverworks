@@ -707,6 +707,8 @@ def manual_text():
     lang["serverworks.config_card.hardcore"] = "Hardcore"
     lang["serverworks.config_card.hardcore.tooltip"] = "Only takes effect when the rack's world is first made."
     lang["serverworks.config_card.pvp"] = "PvP"
+    lang["serverworks.config_card.view"] = "View"
+    lang["serverworks.config_card.simulation"] = "Simulation"
     lang["serverworks.config_card.keep_inventory"] = "Keep Inventory"
     lang["serverworks.config_card.allow_flight"] = "Allow Flight"
     lang["serverworks.config_card.allow_flight.tooltip"] = "Stops the server kicking players for flying, for mods that let them fly."
