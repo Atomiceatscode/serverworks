@@ -452,7 +452,7 @@ def language():
 
         "serverworks.rack.problem.none": "Rack formed.",
         "serverworks.rack.problem.too_small": "A rack must be at least 3 blocks along every side.",
-        "serverworks.rack.problem.too_large": "Too big, or touching other rack blocks. Keep it within 7 blocks a side.",
+        "serverworks.rack.problem.too_large": "Too big, or touching other rack blocks. No rack is over 9 blocks a side (netherite casing).",
         "serverworks.rack.problem.missing_block": "The frame has a gap.",
         "serverworks.rack.problem.missing_block.at": "Missing a rack block at %s, %s, %s.",
         "serverworks.rack.problem.edge_not_casing": "Edges and corners must be casing.",
@@ -476,7 +476,7 @@ def language():
         "serverworks.server_core.formed": "Rack formed",
         "serverworks.server_core.not_formed": "Rack not formed",
         "serverworks.server_core.summary": "%1$s (%2$s)",
-        "serverworks.server_core.help": "Build a hollow box of casing, %s to %s blocks a side. Add a Platform Module, Drive Bay, Memory Bank and Vent. A Rack Wrench shows what is missing.",
+        "serverworks.server_core.help": "Build a hollow box of casing, %s to %s blocks a side (iron up to 5, diamond 7). Add a Platform Module, Drive Bay and Vent. A Rack Wrench shows what is missing.",
         "serverworks.server_core.frame": "Frame",
         "serverworks.server_core.size": "Size",
         "serverworks.server_core.vents": "Vents",
@@ -490,6 +490,7 @@ def language():
         "serverworks.server_core.disks": "Disks loaded: %s of %s",
         "serverworks.server_core.incompatible": "%s won't run here",
         "serverworks.server_core.no_disks": "Put Mod Disks in a Drive Bay to load them.",
+        "serverworks.server_core.no_disks_proxy": "No proxy plugins loaded. Link Cards in a Drive Bay add the racks behind this proxy.",
         "serverworks.server_core.disk_incompatible": "Won't run on %s",
         "serverworks.server_core.start": "Start Server",
         "serverworks.server_core.stop": "Stop Server",
@@ -810,6 +811,7 @@ def manual_text():
     lang["serverworks.manual.recipes.modules"] = "Platform Modules"
     lang["serverworks.manual.recipes.modules.body"] = "its platform's item:"
     lang["serverworks.manual.recipes.shapeless"] = "Any order"
+    lang["serverworks.disk_writer.count.one"] = "1 result"
     lang["serverworks.config.direct_ports"] = "Players reach racks"
     lang["serverworks.config.direct_ports.gateway"] = "Through this server"
     lang["serverworks.config.direct_ports.direct"] = "At their own ports"
@@ -850,8 +852,9 @@ def manual_text():
     lang["serverworks.server_core.update.restart"] = "Newer versions are out. Pinned disks are moved to the newest version and the server restarts to install every update."
     lang["serverworks.server_core.update.line"] = "Update: %s \u2192 %s"
     lang["serverworks.notice.updating"] = "Updating disks..."
-    lang["serverworks.disk_writer.versions.link"] = "Newest version"
-    lang["serverworks.disk_writer.versions.pinned"] = "Pinned: %s"
+    lang["serverworks.disk_writer.versions.link"] = "Newest"
+    lang["serverworks.disk_writer.versions.pinned"] = "Pin: %s"
+    lang["serverworks.disk_writer.status.other_version"] = "No version for %s yet"
     lang["serverworks.disk_writer.versions.tooltip"] = "Choose a version to lock this disk to, or keep the newest compatible one."
     lang["serverworks.disk_writer.versions.newest"] = "Newest compatible version"
     lang["serverworks.disk_writer.versions.newest.detail"] = "Recommended · chosen when the rack starts"

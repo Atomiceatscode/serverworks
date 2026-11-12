@@ -27,6 +27,8 @@ public final class DiskWriterVisualTest implements FabricClientGameTest {
 	private static final int LIST_X = 8;
 	private static final int LIST_Y = 36;
 	private static final int ROW_H = 23;
+	/** Minecraft 26.3 numbers mouse buttons the SDL way: left is 1. */
+	private static final int LEFT = com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT;
 
 	@Override
 	public void runTest(ClientGameTestContext context) {
@@ -73,7 +75,7 @@ public final class DiskWriterVisualTest implements FabricClientGameTest {
 			context.takeScreenshot("4_ready_to_write");
 			takeResult(context);
 
-			clickRow(context, 1, 1);
+			clickRow(context, 1);
 			waitForWrittenDisk(context);
 			takeResult(context);
 			dragRowToPanel(context, 2);
@@ -91,7 +93,7 @@ public final class DiskWriterVisualTest implements FabricClientGameTest {
 			double[] at = toWindow(context, name[0], name[1]);
 			context.getInput().setCursorPos(at[0], at[1]);
 			context.waitTicks(1);
-			context.getInput().pressMouse(0);
+			context.getInput().pressMouse(LEFT);
 			context.waitTicks(5);
 			waitForResults(context);
 			context.waitTicks(40);
@@ -111,6 +113,41 @@ public final class DiskWriterVisualTest implements FabricClientGameTest {
 			if (!allByAuthor) {
 				throw new AssertionError("Clicking " + author + " should list only their projects");
 			}
+
+			// The version link under the project's name lists its versions; picking one pins the disk.
+			clickRow(context, 0);
+			context.waitTicks(20);
+			clickAt(context, 190 + 39, 36 + 42);
+			context.waitFor(client -> ((DiskWriterScreen) client.gui.screen()).versionCount() >= 0, 20 * 30);
+			context.waitTicks(5);
+			context.takeScreenshot("6c_versions");
+			boolean hasOlder = context.computeOnClient(client -> ((DiskWriterScreen) client.gui.screen()).versionCount() >= 1);
+			if (hasOlder) {
+				clickAt(context, LIST_X + 40, LIST_Y + ROW_H + 10);
+				context.waitTicks(10);
+				String pinned = context.computeOnClient(client -> ((DiskWriterScreen) client.gui.screen()).pinnedName());
+				if (pinned == null) {
+					throw new AssertionError("Picking a version should pin the disk");
+				}
+				context.takeScreenshot("6d_pinned");
+			}
+
+			// The star keeps a project as a favourite, and the star button lists favourites.
+			clickAt(context, LIST_X + 170 - 10, LIST_Y + 10);
+			context.waitTicks(3);
+			clickAt(context, 133 + 9, 17 + 8);
+			waitForResults(context);
+			context.waitTicks(20);
+			int favourites = context.computeOnClient(client -> ((DiskWriterScreen) client.gui.screen()).resultCount());
+			boolean showing = context.computeOnClient(client -> ((DiskWriterScreen) client.gui.screen()).showingFavourites());
+			if (!showing || favourites < 1) {
+				throw new AssertionError("The starred project should be listed in favourites");
+			}
+			context.takeScreenshot("6e_favourites");
+			clickAt(context, LIST_X + 170 - 10, LIST_Y + 10);
+			context.waitTicks(3);
+			clickAt(context, 133 + 9, 17 + 8);
+			waitForResults(context);
 
 			context.runOnClient(client -> client.player.closeContainer());
 			context.waitTicks(5);
@@ -190,16 +227,28 @@ public final class DiskWriterVisualTest implements FabricClientGameTest {
 		});
 	}
 
+	/** Clicks a point given in the Disk Writer's own coordinates, with the real mouse. */
+	private static void clickAt(ClientGameTestContext context, double x, double y) {
+		double[] gui = context.computeOnClient(client -> {
+			DiskWriterScreen screen = (DiskWriterScreen) client.gui.screen();
+			return new double[] {(screen.width - 276) / 2.0 + x, (screen.height - 222) / 2.0 + y};
+		});
+		double[] at = toWindow(context, gui[0], gui[1]);
+		context.getInput().setCursorPos(at[0], at[1]);
+		context.waitTicks(1);
+		context.getInput().pressMouse(LEFT);
+		context.waitTicks(2);
+	}
+
 	private static String selectedTitle(ClientGameTestContext context) {
 		return context.computeOnClient(client -> ((DiskWriterScreen) client.gui.screen()).selectedTitle());
 	}
 
 	/** Clicks a row with the real mouse, the way a player (or a trackpad tap) does. */
 	private static void clickRow(ClientGameTestContext context, int row) {
-		clickRow(context, row, 0);
+		clickRow(context, row, LEFT);
 	}
 
-	/** Button 1 is what a Mac trackpad sends for a two-finger tap or a Control-click. */
 	private static void clickRow(ClientGameTestContext context, int row, int button) {
 		double[] gui = rowCentre(context, row);
 		String expected = context.computeOnClient(client -> ((DiskWriterScreen) client.gui.screen()).resultTitle(row));
@@ -225,14 +274,14 @@ public final class DiskWriterVisualTest implements FabricClientGameTest {
 		double[] end = toWindow(context, to[0], to[1]);
 		context.getInput().setCursorPos(start[0], start[1]);
 		context.waitTicks(1);
-		context.getInput().holdMouse(0);
+		context.getInput().holdMouse(LEFT);
 		context.waitTicks(1);
 		for (int step = 1; step <= 10; step++) {
 			context.getInput().setCursorPos(start[0] + (end[0] - start[0]) * step / 10, start[1] + (end[1] - start[1]) * step / 10);
 			context.waitTicks(1);
 		}
 		context.takeScreenshot("5_dragging_to_panel");
-		context.getInput().releaseMouse(0);
+		context.getInput().releaseMouse(LEFT);
 		context.waitTicks(3);
 		if (!expected.equals(selectedTitle(context))) {
 			throw new AssertionError("Dropping row " + row + " on the panel should pick " + expected + ", picked " + selectedTitle(context));

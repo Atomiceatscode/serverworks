@@ -78,6 +78,7 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 	private static final int TEXT_OK = 0xFF63E08A;
 	private static final int DROP_IDLE = 0xFF5A6684;
 	private static final int TEXT_PIN = 0xFF6FC3FF;
+	private static final int TEXT_WARN = 0xFFFFB347;
 	private static final int STAR_ON = 0xFFFFC84A;
 	private static final int DROP_LIT = 0xFF6FC3FF;
 	private static final int ROW_HOVER = 0xFF2E3648;
@@ -205,6 +206,21 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 		return row >= 0 && row < results.size() ? results.get(row).author() : "";
 	}
 
+	/** How many versions the version list shows, or -1 when it is not open; for tests. */
+	public int versionCount() {
+		return versionMode && !versionsLoading ? versions.size() : -1;
+	}
+
+	/** Whether the list shows favourites; for tests. */
+	public boolean showingFavourites() {
+		return favouritesMode;
+	}
+
+	/** The version the disk will be pinned to, or null; for tests. */
+	public @Nullable String pinnedName() {
+		return pinnedName;
+	}
+
 	/** What the search box holds; for tests. */
 	public String searchText() {
 		return search == null ? "" : search.getValue();
@@ -246,7 +262,11 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 		int requested = ++generation;
 		if (favouritesMode) {
 			if (offset == 0) {
-				List<ProjectSummary> starred = dev.serverworks.client.Favourites.matching(lastSearchedText);
+				// Favourites understand @author like a search does; the rest of the text matches titles.
+				SearchQuery typed = SearchQuery.parse(lastSearchedText);
+				List<ProjectSummary> starred = dev.serverworks.client.Favourites.matching(typed.text()).stream()
+						.filter(p -> typed.author().isEmpty() || typed.author().equalsIgnoreCase(p.author()))
+						.toList();
 				onSearchDone(new SearchResult(starred, 0, starred.size(), starred.size()), null);
 				if (starred.isEmpty()) {
 					listMessage = Component.translatable("serverworks.disk_writer.favourites.empty");
@@ -635,17 +655,29 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 		return switch (selectState) {
 			case PENDING -> Component.translatable("serverworks.disk_writer.status.checking");
 			case FAILED -> selectMessage != null ? selectMessage : Component.translatable("serverworks.disk_writer.error.unavailable");
-			case READY -> menu.hasBlankDisk()
+			case READY -> !forThisVersion()
+					? Component.translatable("serverworks.disk_writer.status.other_version",
+							net.minecraft.SharedConstants.getCurrentVersion().name())
+					: menu.hasBlankDisk()
 					? Component.translatable("serverworks.disk_writer.status.ready")
 					: Component.translatable("serverworks.disk_writer.status.need_disk");
 			case NONE -> Component.empty();
 		};
 	}
 
+	/**
+	 * Whether the catalog lists a version of the selected project for this Minecraft version.
+	 * A disk for one without would fail on every rack, so the panel says so.
+	 */
+	private boolean forThisVersion() {
+		return selected == null || selected.gameVersions().isEmpty()
+				|| selected.gameVersions().contains(net.minecraft.SharedConstants.getCurrentVersion().name());
+	}
+
 	private int statusColor() {
 		return switch (selectState) {
 			case FAILED -> TEXT_ERROR;
-			case READY -> menu.hasBlankDisk() ? TEXT_OK : TEXT_DIM;
+			case READY -> !forThisVersion() ? TEXT_WARN : menu.hasBlankDisk() ? TEXT_OK : TEXT_DIM;
 			default -> TEXT_DIM;
 		};
 	}
@@ -666,7 +698,8 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 		graphics.text(font, title, titleLabelX, titleLabelY, TEXT, false);
 		graphics.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, TEXT, false);
 		Component count = totalHits > 0
-				? Component.translatable("serverworks.disk_writer.count", String.format(Locale.ROOT, "%,d", totalHits))
+				? Component.translatable(totalHits == 1 ? "serverworks.disk_writer.count.one" : "serverworks.disk_writer.count",
+						String.format(Locale.ROOT, "%,d", totalHits))
 				: Component.translatable("serverworks.disk_writer.powered_by");
 		graphics.text(font, count, imageWidth - 8 - font.width(count), titleLabelY, TEXT_MUTED, false);
 	}
@@ -819,9 +852,8 @@ public final class DiskWriterScreen extends AbstractContainerScreen<DiskWriterMe
 
 	@Override
 	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-		// Either button picks: a Mac trackpad often reports taps as right-clicks (two-finger tap or
-		// Control-click), and the list has no other use for the right button.
-		if (event.button() == 0 || event.button() == 1) {
+		// Minecraft 26.3 numbers mouse buttons the SDL way: left is 1, right is 3.
+		if (event.button() == com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT) {
 			if (maxScroll() > 0 && overScrollbar(event.x(), event.y())) {
 				draggingScrollbar = true;
 				scrollToMouse(event.y());

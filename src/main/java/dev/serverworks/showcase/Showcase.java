@@ -346,7 +346,25 @@ public final class Showcase {
 
 	private static void wallSign(ServerLevel level, BlockPos pos, Component name) {
 		level.setBlockAndUpdate(pos, Blocks.OAK_WALL_SIGN.defaultBlockState().setValue(WallSignBlock.FACING, Direction.NORTH));
-		text(level, pos, DyeColor.BLACK, false, sign -> sign.setLine(1, name));
+		String[] parts = splitName(name.getString());
+		text(level, pos, DyeColor.BLACK, false, sign -> {
+			sign.setLine(1, Component.literal(parts[0]));
+			sign.setLine(2, Component.literal(parts[1]));
+		});
+	}
+
+	/** A sign line fits about fourteen characters, so longer names go on two lines, split between words. */
+	static String[] splitName(String name) {
+		if (name.length() <= 14 || !name.contains(" ")) {
+			return new String[] {name, ""};
+		}
+		int best = -1;
+		for (int i = name.indexOf(' '); i >= 0; i = name.indexOf(' ', i + 1)) {
+			if (best < 0 || Math.abs(i - name.length() / 2) < Math.abs(best - name.length() / 2)) {
+				best = i;
+			}
+		}
+		return new String[] {name.substring(0, best), name.substring(best + 1)};
 	}
 
 	/** A free-standing sign facing north, toward someone walking in from the origin. */

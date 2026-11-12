@@ -6,6 +6,7 @@
 	"environment": "*",
 	"entrypoints": {
 		"fabric-client-gametest": [
+			"dev.serverworks.test.DebugSweepTest",
 			"dev.serverworks.test.DiskWriterVisualTest",
 			"dev.serverworks.test.RackVisualTest",
 			"dev.serverworks.test.RackServerVisualTest",

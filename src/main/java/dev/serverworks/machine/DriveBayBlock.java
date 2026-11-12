@@ -54,6 +54,24 @@ public final class DriveBayBlock extends RackComponentBlock implements EntityBlo
 		return new DriveBayBlockEntity(pos, state);
 	}
 
+	/**
+	 * In Creative mode a broken block drops nothing, which would lose the disks a bay keeps
+	 * inside; like a shulker box, a bay that holds anything drops itself with them anyway.
+	 */
+	@Override
+	public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+		if (!level.isClientSide() && player.preventsBlockDrops()
+				&& level.getBlockEntity(pos) instanceof DriveBayBlockEntity bay && !bay.isEmpty()) {
+			net.minecraft.world.item.ItemStack stack = new net.minecraft.world.item.ItemStack(state.getBlock());
+			stack.applyComponents(bay.collectComponents());
+			net.minecraft.world.entity.item.ItemEntity entity = new net.minecraft.world.entity.item.ItemEntity(level,
+					pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, stack);
+			entity.setDefaultPickUpDelay();
+			level.addFreshEntity(entity);
+		}
+		return super.playerWillDestroy(level, pos, state, player);
+	}
+
 	/** A drive bay opens its own disk slots whether or not the rack is formed. */
 	@Override
 	protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
